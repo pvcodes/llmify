@@ -4,7 +4,7 @@ import * as React from "react"
 import { ThemeProvider as NextThemesProvider } from "next-themes"
 import { SessionProvider } from 'next-auth/react';
 
-export function ThemeProvider({
+export default function Provider({
     children,
     ...props
 }: React.ComponentProps<typeof NextThemesProvider>) {
@@ -12,6 +12,5 @@ export function ThemeProvider({
         <SessionProvider>
             {children}
         </SessionProvider>
-
     </NextThemesProvider>
 }
