@@ -138,7 +138,7 @@ export const Navbar = () => {
             <Button
               rel="noreferrer noopener"
               // href='/signin'
-              onClick={signIn}
+              onClick={() => signIn()}
             // className={`border ${buttonVariants({ variant: "default" })}`}
             >
               <LogIn />

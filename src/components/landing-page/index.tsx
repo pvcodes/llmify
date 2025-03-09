@@ -13,7 +13,7 @@ import { ScrollToTop } from "./ScrollToTop";
 import { Services } from "./Services";
 // import { Sponsors } from "./Sponsors";
 // import { Team } from "./Team";
-import { Testimonials } from "./Testimonials";
+// import { Testimonials } from "./Testimonials";
 
 function Landing() {
   return (

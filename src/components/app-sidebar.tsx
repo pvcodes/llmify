@@ -1,4 +1,4 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
+import { MessageSquareDashed } from "lucide-react"
 
 import {
     Sidebar,
@@ -16,30 +16,36 @@ import { APP_NAME } from "@/lib/constant"
 // Menu items.
 const items = [
     {
-        title: "Home",
+        title: "Chat",
         url: "#",
-        icon: Home,
+        icon: MessageSquareDashed,
+
     },
-    {
-        title: "Inbox",
-        url: "#",
-        icon: Inbox,
-    },
-    {
-        title: "Calendar",
-        url: "#",
-        icon: Calendar,
-    },
-    {
-        title: "Search",
-        url: "#",
-        icon: Search,
-    },
-    {
-        title: "Settings",
-        url: "#",
-        icon: Settings,
-    },
+    // {
+    //     title: "Home",
+    //     url: "#",
+    //     icon: Home,
+    // },
+    // {
+    //     title: "Inbox",
+    //     url: "#",
+    //     icon: Inbox,
+    // },
+    // {
+    //     title: "Calendar",
+    //     url: "#",
+    //     icon: Calendar,
+    // },
+    // {
+    //     title: "Search",
+    //     url: "#",
+    //     icon: Search,
+    // },
+    // {
+    //     title: "Settings",
+    //     url: "#",
+    //     icon: Settings,
+    // },
 ]
 
 export function AppSidebar() {

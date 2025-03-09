@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { LogoIcon } from "./Icons";
 import { APP_NAME, GITHUB_REPO_URL } from "@/lib/constant";
 import Image from "next/image";
 import { appImage } from "@/lib/images";

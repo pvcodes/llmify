@@ -19,7 +19,7 @@ export const Cta = () => {
             with Ease
           </h2>
           <p className="text-muted-foreground text-xl mt-4 mb-8 lg:mb-0">
-            Effortlessly connect to diverse AI models and transform your projects with LLMify's seamless interface. Discover the future of AI-driven innovation today!
+            Effortlessly connect to diverse AI models and transform your projects with LLMify&aops; seamless interface. Discover the future of AI-driven innovation today!
           </p>
         </div>
 
