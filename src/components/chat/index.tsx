@@ -233,7 +233,7 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
                     </div>
                 )}
 
-                <div className="justify-center mt-2 text-xs text-muted-foreground w-full">
+                <div className="flex justify-center mt-2 text-xs text-muted-foreground w-full">
                     <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-md shadow-sm border border-gray-300 dark:border-gray-700">
                         Token usage: <span className="font-semibold text-primary">{userBilling?.tokenUsage}</span> tokens out of <span className="font-semibold">{MAX_FREE_TOKEN}</span>
                     </span>
