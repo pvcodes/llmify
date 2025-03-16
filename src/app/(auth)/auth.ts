@@ -56,7 +56,6 @@ export const authOptions = {
 	],
 	callbacks: {
 		async session({ session, token }) {
-			console.log(session, token);
 			if (session?.user) {
 				session.user.image = token.picture;
 			}
@@ -89,6 +88,10 @@ export const authOptions = {
 							password: hashedPassword,
 						},
 					});
+					// default billing
+					await db.billing.create({
+						data: { userId: existingUser.id },
+					});
 				}
 
 				// Proceed with the sign-in process
@@ -101,6 +104,6 @@ export const authOptions = {
 	},
 	secret: process.env.NEXTAUTH_SECRET || "secr3t",
 	pages: {
-		// signIn: "/signin",
+		signIn: "/signin",
 	},
 } satisfies NextAuthOptions;

@@ -8,9 +8,68 @@ datasource db {
 }
 
 model User {
-  id       Int     @id @default(autoincrement())
-  name     String
-  email    String  @unique
-  password String
-  img_url  String?
+  id           Int            @id @default(autoincrement())
+  name         String
+  email        String         @unique
+  password     String
+  img_url      String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  chats        Chat[]
+  billing      Billing?
+  SupportQuery SupportQuery[]
+}
+
+model Billing {
+  id         Int          @id @default(autoincrement())
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int          @unique
+  level      BillingLevel @default(FREE)
+  tokenUsage Int          @default(0)
+  startDate  DateTime     @default(now())
+  endDate    DateTime?
+  isValid    Boolean      @default(false)
+}
+
+model Chat {
+  id        String    @id
+  name      String?
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+}
+
+model Message {
+  id        String      @id
+  content   String
+  role      MessageRole
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  chatId    String
+  chat      Chat        @relation(fields: [chatId], references: [id], onDelete: Cascade)
+}
+
+model SupportQuery {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   String
+  message   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum MessageRole {
+  system
+  user
+  assistant
+  data
+}
+
+enum BillingLevel {
+  FREE
+  PREMIUM
+  ENTERPRISE
 }

@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Provider from "@/components/Provider";
+import Providers from "@/components/Providers";
 import { APP_DESCRIPTION, APP_NAME } from "@/lib/constant";
+import { Toaster } from "@/components/ui/sonner";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,26 +21,35 @@ export const metadata: Metadata = {
   description: APP_DESCRIPTION
 };
 
+export const viewport = {
+  maximumScale: 1, // Disable auto-zoom on mobile Safari
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning style={{
-      scrollBehavior: 'smooth'
-    }}>
+    <html lang="en"
+      style={{
+        scrollBehavior: 'smooth'
+      }}
+      suppressHydrationWarning
+    >
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Provider
+        <Providers
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
+
+          <Toaster position="top-center" />
           {children}
-        </Provider>
+        </Providers>
       </body>
     </html>
   );
