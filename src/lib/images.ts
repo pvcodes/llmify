@@ -4,6 +4,7 @@ import cubeLeg from "../../public/assets/cube-leg.png";
 import lookingAheadImage from "../../public/assets/looking-ahead.png";
 import pilotImage from "../../public/assets/pilot.png";
 import reflectingImage from "../../public/assets/reflecting.png";
+import googleIcon from "../../public/assets/google.png";
 
 export {
 	growthImage,
@@ -12,4 +13,5 @@ export {
 	cubeLeg,
 	pilotImage,
 	reflectingImage,
+	googleIcon,
 };

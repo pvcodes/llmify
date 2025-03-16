@@ -56,7 +56,6 @@ export const authOptions = {
 	],
 	callbacks: {
 		async session({ session, token }) {
-			console.log(session, token);
 			if (session?.user) {
 				session.user.image = token.picture;
 			}
@@ -101,6 +100,6 @@ export const authOptions = {
 	},
 	secret: process.env.NEXTAUTH_SECRET || "secr3t",
 	pages: {
-		// signIn: "/signin",
+		signIn: "/signin",
 	},
 } satisfies NextAuthOptions;

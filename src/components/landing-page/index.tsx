@@ -6,7 +6,7 @@ import { Features } from "./Features";
 import { Footer } from "./Footer";
 import { Hero } from "./Hero";
 import { HowItWorks } from "./HowItWorks";
-import { Navbar } from "./Navbar";
+import { LandingNavbar } from "./Navbar";
 // import { Newsletter } from "./Newsletter";
 import { Pricing } from "./Pricing";
 import { ScrollToTop } from "./ScrollToTop";
@@ -18,7 +18,7 @@ import { Services } from "./Services";
 function Landing() {
   return (
     <div className="flex flex-col justify-center items-center px-2">
-      <Navbar />
+      <LandingNavbar />
       <Hero />
       {/* <Sponsors /> */}
       <About />
