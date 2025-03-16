@@ -22,7 +22,6 @@ const ChatMessage = memo(({ message }: { message: Message }) => {
             </div>
 
             <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                {message.id}
                 {message.role === 'assistant' ? (
                     <div className="prose prose-sm dark:prose-invert">
                         <ReactMarkdown components={markdownComponents}>
