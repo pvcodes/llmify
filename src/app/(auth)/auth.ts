@@ -88,6 +88,10 @@ export const authOptions = {
 							password: hashedPassword,
 						},
 					});
+					// default billing
+					await db.billing.create({
+						data: { userId: existingUser.id },
+					});
 				}
 
 				// Proceed with the sign-in process

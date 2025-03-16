@@ -47,7 +47,7 @@ export default function User() {
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push('/report-bug')}>Found a issue?</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push('/support')}>Found a issue?</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push('/support')}>Support</DropdownMenuItem>
                 {/* <DropdownMenuItem disabled>API</DropdownMenuItem> */}
                 <DropdownMenuSeparator />
