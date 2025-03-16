@@ -1,10 +1,18 @@
+"use server";
 import db from "@/db";
+import { revalidatePath } from "next/cache";
 
 export const getIntitalMessages = async (chatId: string) => {
 	try {
 		const chatWithMessages = await db.chat.findUniqueOrThrow({
 			where: { id: chatId },
-			include: { messages: true }, // Fetch messages along with chat
+			include: {
+				messages: {
+					orderBy: {
+						createdAt: "asc",
+					},
+				},
+			},
 		});
 
 		const messages = chatWithMessages.messages;
@@ -23,6 +31,9 @@ export const getChats = async (email: string) => {
 					email,
 				},
 			},
+			orderBy: {
+				createdAt: "desc",
+			},
 		});
 
 		return chats;
@@ -30,3 +41,7 @@ export const getChats = async (email: string) => {
 		throw new Error((error as Error).message);
 	}
 };
+
+export async function revalidateSidebar() {
+	revalidatePath("/", "layout");
+}

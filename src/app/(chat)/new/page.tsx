@@ -6,9 +6,10 @@ import { LoaderCircle, SendHorizonal, Terminal } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import useChatStore from "@/store/useChatStore"
-import { generateId } from "ai"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
+import { generateChatId } from "@/lib/utils"
+import { revalidateSidebar } from "../chat/action"
 
 export default function NewChat() {
 
@@ -31,7 +32,7 @@ export default function NewChat() {
       setLoading(true)
       setErrorMessage("")
 
-      const chatId = generateId()
+      const chatId = generateChatId()
       const response = await fetch("/api/x/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -43,7 +44,7 @@ export default function NewChat() {
         setErrorMessage(data?.error?.message || "Failed to create chat")
         return
       }
-
+      await revalidateSidebar() // refect chats for sidebar
       router.push(`/chat/${chatId}`)
     } catch (error) {
       console.error(error)

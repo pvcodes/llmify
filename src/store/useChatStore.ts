@@ -1,5 +1,9 @@
 "use client";
-import { type ModelProviderType, type Models } from "@/lib/ai/models";
+import {
+	AIModelProviders,
+	type ModelProviderType,
+	type Models,
+} from "@/lib/ai/models";
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 
@@ -87,7 +91,10 @@ const useChatStore = create<ChatState>()(
 	devtools(
 		persist(
 			(set, get) => ({
-				config: null,
+				config: {
+					provider: "Anthropic",
+					model: AIModelProviders.Anthropic[0],
+				},
 				apiKeys: {},
 				cryptoKey: null,
 

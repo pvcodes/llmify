@@ -16,20 +16,20 @@ const markdownComponents: Record<string, React.FC<MarkdownComponentProps>> = {
 		}
 		return (
 			<code
-				className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm font-mono"
+				className="bg-gray-100 dark:bg-gray-800 px-1 text-sm font-mono rounded"
 				{...props}
 			>
 				{children}
 			</code>
 		);
 	},
-	p: ({ children }) => <p className="mb-2">{children}</p>,
-	ul: ({ children }) => <ul className="list-disc ml-4">{children}</ul>,
-	ol: ({ children }) => <ol className="list-decimal ml-4">{children}</ol>,
-	li: ({ children }) => <li className="mb-1">{children}</li>,
-	h1: ({ children }) => <h1 className="text-2xl font-bold mt-4 mb-2">{children}</h1>,
-	h2: ({ children }) => <h2 className="text-xl font-bold mt-3 mb-2">{children}</h2>,
-	h3: ({ children }) => <h3 className="text-lg font-bold mt-2 mb-1">{children}</h3>,
+	p: ({ children }) => <p className="mb-1">{children}</p>,
+	ul: ({ children }) => <ul className="list-disc pl-4 mb-1">{children}</ul>,
+	ol: ({ children }) => <ol className="list-decimal pl-4 mb-1">{children}</ol>,
+	li: ({ children }) => <li className="mb-0.5">{children}</li>,
+	h1: ({ children }) => <h1 className="text-xl font-medium mt-3 mb-1">{children}</h1>,
+	h2: ({ children }) => <h2 className="text-lg font-medium mt-2 mb-1">{children}</h2>,
+	h3: ({ children }) => <h3 className="text-base font-medium mt-1.5 mb-0.5 ">{children}</h3>,
 	a: ({ children, href }) => (
 		<a
 			href={href}
@@ -41,17 +41,17 @@ const markdownComponents: Record<string, React.FC<MarkdownComponentProps>> = {
 		</a>
 	),
 	table: ({ children }) => (
-		<div className="overflow-x-auto">
-			<table className="w-full border-collapse border border-gray-300 dark:border-gray-700">
+		<div className="overflow-x-auto my-1">
+			<table className="w-full border-collapse text-sm">
 				{children}
 			</table>
 		</div>
 	),
 	th: ({ children }) => (
-		<th className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-left font-semibold">{children}</th>
+		<th className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-left font-medium border border-gray-200 dark:border-gray-700">{children}</th>
 	),
 	td: ({ children }) => (
-		<td className="px-3 py-2 border border-gray-300 dark:border-gray-700">{children}</td>
+		<td className="px-1.5 py-0.5 border border-gray-200 dark:border-gray-700">{children}</td>
 	),
 };
 

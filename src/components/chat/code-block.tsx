@@ -1,6 +1,7 @@
 'use client';
+
 import { Button } from "@/components/ui/button";
-import { Copy } from "lucide-react";
+import { Copy, Check } from "lucide-react";
 import React, { useState, memo } from "react";
 import { toast } from "sonner";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -16,7 +17,7 @@ const CodeBlock = memo(({ language, value }: { language: string, value: string }
       toast.success("Code copied to clipboard");
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {
-      console.log(err)
+      console.log(err);
       toast.error("Failed to copy code");
     }
   };
@@ -28,11 +29,14 @@ const CodeBlock = memo(({ language, value }: { language: string, value: string }
         <Button
           variant="ghost"
           size="icon"
-          className="p-1 h-6 w-6 sm:absolute sm:right-2 sm:top-1 sm:opacity-0 sm:group-hover:opacity-100 sm:transition-opacity"
+          className="p-1 h-6 w-6 sm:absolute sm:right-2 sm:top-1 sm:opacity-0 sm:group-hover:opacity-100 sm:transition-opacity sm:duration-200"
           onClick={handleCopy}
           aria-label="Copy code"
         >
-          <Copy className={`w-4 h-4 ${isCopied ? 'text-green-400' : 'text-gray-400'}`} />
+          {isCopied ?
+            <Check className="w-4 h-4 text-green-400" /> :
+            <Copy className="w-4 h-4 text-gray-400" />
+          }
         </Button>
       </div>
       <div className="overflow-x-auto">

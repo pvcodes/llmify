@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ModelProviders, type ModelProviderType } from "@/lib/ai/models";
 
 export const payloadSchema = z.object({
-	id: z.string().min(1, "API key is required").optional(),
+	id: z.string(),
 	messages: z.array(z.any()),
 	modelConfig: z.object({
 		provider: z.enum(
@@ -12,7 +12,7 @@ export const payloadSchema = z.object({
 			value: z.string().or(z.null()),
 		}),
 	}),
-	apiKey: z.string().optional()
+	apiKey: z.string().optional(),
 });
 
 export type PayloadType = z.infer<typeof payloadSchema>;

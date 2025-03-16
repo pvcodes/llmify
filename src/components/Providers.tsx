@@ -9,11 +9,7 @@ import {
 } from '@tanstack/react-query'
 const queryClient = new QueryClient()
 
-<<<<<<<< HEAD:src/components/Provider.tsx
 export default function Provider({
-========
-export default function Providers({
->>>>>>>> 4ce793a220faf90213ba364559ab5218d6cec054:src/components/Providers.tsx
     children,
     ...props
 }: React.ComponentProps<typeof NextThemesProvider>) {
@@ -23,9 +19,5 @@ export default function Providers({
                 {children}
             </QueryClientProvider>
         </SessionProvider>
-<<<<<<<< HEAD:src/components/Provider.tsx
     </NextThemesProvider>
-========
-    </NextThemesProvider >
->>>>>>>> 4ce793a220faf90213ba364559ab5218d6cec054:src/components/Providers.tsx
 }

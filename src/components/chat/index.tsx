@@ -16,6 +16,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { ModelProvidersViaTier, ModelProviderType, } from "@/lib/ai/models";
 import { useRouter } from "next/navigation";
 import { Billing } from "@prisma/client";
+import { MAX_FREE_TOKEN } from "@/lib/constant";
 
 interface ChatProps {
     id: string;
@@ -64,11 +65,15 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
     const currProviderApiKey = useMemo(() => modelConfig ? getApiKey(modelConfig.provider as ModelProviderType) : null, [modelConfig, getApiKey]);
 
     useEffect(() => {
-        if (isNew && modelConfig) {
-            reload({
-                body: { id, modelConfig, apiKey: currProviderApiKey, messages },
-            });
+        const fetchInitialResponse = async () => {
+
+            if (isNew && modelConfig) {
+                reload({
+                    body: { id, modelConfig, apiKey: await currProviderApiKey, messages },
+                });
+            }
         }
+        fetchInitialResponse()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -95,7 +100,8 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
         handleSubmit(e, {
             body: { id, modelConfig, apiKey: await currProviderApiKey },
         });
-    }, [input, status, handleSubmit, modelConfig, id, lastSubmitTime, currProviderApiKey, isApiKeyRequired]);
+        router.refresh()
+    }, [input, status, handleSubmit, modelConfig, id, lastSubmitTime, currProviderApiKey, isApiKeyRequired, router]);
 
     // Handle retry on error
     const handleRetry = useCallback(async () => {
@@ -226,6 +232,13 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
                         </span>
                     </div>
                 )}
+
+                <div className="hidden md:flex justify-center mt-2 text-xs text-muted-foreground w-full">
+                    <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-md shadow-sm border border-gray-300 dark:border-gray-700">
+                        Token usage: <span className="font-semibold text-primary">{userBilling?.tokenUsage}</span> tokens out of <span className="font-semibold">{MAX_FREE_TOKEN}</span>
+                    </span>
+                </div>
+
             </CardFooter>
         </Card>
     );
