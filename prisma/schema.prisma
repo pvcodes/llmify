@@ -8,15 +8,16 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
-  img_url   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  chats     Chat[]
-  billing   Billing?
+  id           Int            @id @default(autoincrement())
+  name         String
+  email        String         @unique
+  password     String
+  img_url      String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  chats        Chat[]
+  billing      Billing?
+  SupportQuery SupportQuery[]
 }
 
 model Billing {
@@ -48,6 +49,16 @@ model Message {
   updatedAt DateTime    @updatedAt
   chatId    String
   chat      Chat        @relation(fields: [chatId], references: [id], onDelete: Cascade)
+}
+
+model SupportQuery {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   String
+  message   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum MessageRole {
