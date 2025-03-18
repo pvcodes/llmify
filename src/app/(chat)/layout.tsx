@@ -13,14 +13,14 @@ export default async function Layout({ children }: { children: React.ReactNode }
 
     return (
         <SidebarProvider>
-            <div className="flex w-full">
-                <div className="hidden sm:block">
+            <div className="w-full">
+                <div className="flex">
                     <AppSidebar />
+                    <div className="w-full">
+                        <Navbar tier={userBillingDetails?.level ?? null} />
+                        {children}
+                    </div>
                 </div>
-                <main className="flex flex-col justify-between items-space h-full w-full p-4">
-                    <Navbar tier={userBillingDetails?.level ?? null} />
-                    {children}
-                </main>
             </div>
         </SidebarProvider>
     )

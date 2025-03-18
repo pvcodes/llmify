@@ -22,7 +22,7 @@ export async function AppSidebar() {
     const chats = await getChats(session?.user?.email as string) || []
 
     return (
-        <Sidebar className="border-r relative">
+        <Sidebar className="border-r">
             {/* Sticky App Name with funky styling */}
             <div className="sticky top-0 z-10  p-2 flex items-center justify-between bg-gray-100 dark:bg-gray-600">
                 <div className="flex items-center gap-2">

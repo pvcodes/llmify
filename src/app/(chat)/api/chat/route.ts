@@ -49,7 +49,11 @@ export async function POST(req: Request) {
 			);
 		}
 
-		if (!apiKey && billing.tokenUsage >= MAX_FREE_TOKEN)
+		if (
+			!apiKey &&
+			billing.level === "FREE" &&
+			billing.tokenUsage >= MAX_FREE_TOKEN
+		)
 			throw new Error(
 				"Token Limit exceeded, Please add upgrade your tier"
 			);
