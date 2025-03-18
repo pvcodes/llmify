@@ -11,6 +11,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/(auth)/auth";
 import { MAX_FREE_TOKEN } from "@/lib/constant";
 import { model } from "@/lib/ai";
+import { generalPrompt } from "@/lib/ai/prompt";
 
 export async function POST(req: Request) {
 	try {
@@ -83,6 +84,7 @@ export async function POST(req: Request) {
 		const result = streamText({
 			model: modelToUse,
 			messages,
+			system: generalPrompt,
 			// prompt: generalPrompt,
 			onFinish: async (res) => {
 				const token = res.usage.totalTokens;
