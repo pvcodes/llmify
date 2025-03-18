@@ -1,8 +1,6 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { LoaderCircle, SendHorizonal, Terminal } from "lucide-react"
+import { Terminal } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import useChatStore from "@/store/useChatStore"
@@ -10,6 +8,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
 import { generateChatId } from "@/lib/utils"
 import { revalidateSidebar } from "../chat/action"
+import ChatInputBox from "@/components/chat/chat-inputbox"
 
 export default function NewChat() {
 
@@ -69,18 +68,13 @@ export default function NewChat() {
       }
 
       <div className="flex flex-col items-center justify-center h-screen px-4 sm:px-6 md:px-8 lg:px-10">
-        <form onSubmit={handleFirstChat} className="flex w-full max-w-2xl gap-2">
-          <Input
-            className="flex-1"
-            value={prompt}
-            placeholder="Ask me anything..."
-            onChange={(e) => setPrompt(e.target.value)}
-            disabled={loading}
+        <div className="flex w-full max-w-2xl gap-2">
+          <ChatInputBox input={prompt}
+            onInputChange={(e) => setPrompt(e.target.value)}
+            onSubmit={handleFirstChat}
+            isLoading={loading}
           />
-          <Button type="submit" disabled={loading}>
-            {loading ? <LoaderCircle className="animate-spin" /> : <SendHorizonal className="w-5 h-5" />}
-          </Button>
-        </form>
+        </div>
         {errorMessage && <p className="text-red-500 mt-2 text-sm">{errorMessage}</p>}
       </div>
     </>

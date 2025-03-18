@@ -61,17 +61,17 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
         }
     }, []);
 
-    // Scroll on mount and when messages change
     useEffect(() => {
         scrollToBottom();
-    }, [messages.length, scrollToBottom]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [messages.length]);
 
     // Scroll when streaming
     useEffect(() => {
-        if (status === 'streaming') {
+        if (status === 'streaming' && !isNew) {
             scrollToBottom();
         }
-    }, [status, scrollToBottom]);
+    }, [status, scrollToBottom, isNew]);
 
     // Initialize new chat
     useEffect(() => {
@@ -83,7 +83,8 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
             }
         };
         fetchInitialResponse();
-    }, [isNew, modelConfig, id, reload, currProviderApiKey, messages,]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Form submission
     const handleFormSubmit = useCallback(async (e: React.FormEvent) => {
@@ -103,7 +104,7 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
         }
 
         lastSubmitTime.current = now;
-        await handleSubmit(e, {
+        handleSubmit(e, {
             body: { id, modelConfig, apiKey: await currProviderApiKey },
         });
         router.refresh();
@@ -119,7 +120,7 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
     }, [status, reload, modelConfig, currProviderApiKey, id]);
 
     return (
-        <div className="flex flex-col h-full w-full max-w-4xl mx-auto">
+        <div className="flex flex-col h-full w-full max-w-4xl mx-auto min-h-screen">
             <div
                 ref={containerRef}
                 className="flex-1 overflow-y-auto p-2 sm:p-4"

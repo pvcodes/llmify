@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { SendHorizonal } from "lucide-react";
+import { Loader2, SendHorizonal } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -13,6 +13,7 @@ interface ChatInputBoxProps {
     onSubmit: (e: React.FormEvent) => void;
     setInput?: (value: string) => void;
     isDisabled?: boolean;
+    isLoading?: boolean;
     placeholder?: string;
     showShortcuts?: boolean;
     maxHeight?: number;
@@ -32,6 +33,7 @@ export default function ChatInputBox({
     showShortcuts = true,
     maxHeight = 150,
     tokenInfo,
+    isLoading = false
 }: ChatInputBoxProps) {
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const isMobile = useIsMobile();
@@ -95,10 +97,11 @@ export default function ChatInputBox({
                                 type="submit"
                                 size="icon"
                                 className="rounded-full w-10 h-10 sm:w-12 sm:h-12"
-                                disabled={!input.trim() || isDisabled}
+                                disabled={!input.trim() || isDisabled || isLoading}
                                 aria-label="Send message"
+
                             >
-                                <SendHorizonal className="w-5 h-5" />
+                                {isLoading ? <Loader2 className="animate-spin" /> : <SendHorizonal className="w-5 h-5" />}
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>Send message</TooltipContent>
