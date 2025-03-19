@@ -1,8 +1,8 @@
-import { Github } from "lucide-react";
+// import { Github } from "lucide-react";
 import { Button } from "../ui/button";
-import { buttonVariants } from "../ui/button";
+// import { buttonVariants } from "../ui/button";
 import { HeroCards } from "./HeroCards";
-import { GITHUB_REPO_URL } from "@/lib/constant";
+// import { GITHUB_REPO_URL } from "@/lib/constant";
 import { signIn } from "next-auth/react";
 
 export const Hero = () => {
@@ -31,7 +31,7 @@ export const Hero = () => {
         <div className="space-y-4 md:space-y-0 md:space-x-4">
           <Button className="w-full md:w-1/3" onClick={() => signIn()}>Get Started</Button>
 
-          <a
+          {/* <a
             rel="noreferrer noopener"
             href={GITHUB_REPO_URL}
             target="_blank"
@@ -41,7 +41,7 @@ export const Hero = () => {
           >
             Github Repository
             <Github className="ml-2 w-5 h-5" />
-          </a>
+          </a> */}
         </div>
       </div>
 

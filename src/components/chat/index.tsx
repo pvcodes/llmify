@@ -2,7 +2,7 @@
 
 import { Message, useChat } from "@ai-sdk/react";
 import { Button } from "@/components/ui/button";
-import { RefreshCcw, Loader2, Settings, ArrowDown } from "lucide-react";
+import { RefreshCcw, Loader2, Settings } from "lucide-react";
 import React, { useCallback, useEffect, useRef } from "react";
 import useChatStore from "@/store/useChatStore";
 import { toast } from "sonner";
@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { type Billing } from "@prisma/client";
 import { MAX_FREE_TOKEN } from "@/lib/constant";
 import ChatInputBox from "./chat-inputbox";
+import ScrollToBottom from "../ScrollToBottom";
 
 interface ChatProps {
     id: string;
@@ -55,14 +56,13 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
 
     // Scroll function
     const scrollToBottom = useCallback(() => {
-        if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-        }
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, []);
+
 
     // Scroll when streaming
     useEffect(() => {
-        if (status === 'streaming' && !isNew) {
+        if (status === 'streaming' || status === 'submitted') {
             scrollToBottom();
         }
     }, [status, scrollToBottom, isNew]);
@@ -122,11 +122,13 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
                     <ChatMessage message={message} key={message.id} />
                 ))}
 
+                <div ref={messagesEndRef} />
+
                 {(status === 'streaming' || status === 'submitted') && (
                     <div className="flex flex-col items-center justify-center p-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
                             <Loader2 className="w-5 h-5 animate-spin" />
-                            <span>{status === 'submitted' ? 'Waiting for response' : 'Assistant is typing...'}</span>
+                            <span>{status === 'submitted' ? 'Thinking...' : 'Assistant is typing...'}</span>
                         </div>
                         <Button
                             type="button"
@@ -174,7 +176,6 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
                         </AlertDescription>
                     </Alert>
                 )}
-                <div ref={messagesEndRef} />
             </div>
 
             <div className="sticky bottom-0 p-2 sm:p-4 border-t bg-background z-10">
@@ -190,9 +191,7 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
                     } : undefined}
                 />
             </div>
-            <div className="sticky bottom-30 right-0 flex justify-end">
-                <Button size='icon' variant='secondary' onClick={scrollToBottom} className="opacity-30 hover:opacity-100"><ArrowDown /></Button>
-            </div>
+            <ScrollToBottom />
         </div >
     );
 }

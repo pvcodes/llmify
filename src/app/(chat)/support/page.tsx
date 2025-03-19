@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { GITHUB_REPO_URL } from "@/lib/constant";
+// import { GITHUB_REPO_URL } from "@/lib/constant";
 
 export default function SupportForm() {
     const { data: session } = useSession();
@@ -60,7 +60,7 @@ export default function SupportForm() {
 
     return (
         <div className="max-w-2xl mx-auto p-6">
-            <div className="mb-8 border-l-4 border-blue-600 pl-4">
+            {/* <div className="mb-8 border-l-4 border-blue-600 pl-4">
                 <p className="text-lg font-semibold">
                     Are you a developer and want to fix a bug you found?{' '}
                     <Link
@@ -73,7 +73,7 @@ export default function SupportForm() {
                     </Link>
                     {' '}to create an issue or maybe submit your fix!
                 </p>
-            </div>
+            </div> */}
 
             <h1 className="text-3xl font-bold mb-6">LLMify Support</h1>
 

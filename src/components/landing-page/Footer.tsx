@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { APP_NAME, GITHUB_REPO_URL } from "@/lib/constant";
+import { APP_NAME } from "@/lib/constant";
 import Image from "next/image";
 import { appImage } from "@/lib/images";
 
@@ -28,13 +28,13 @@ export const Footer = () => {
         <div className="flex flex-col gap-2">
           <h3 className="font-bold text-lg">Follow US</h3>
           <div>
-            <Link
+            {/* <Link
               rel="noreferrer noopener"
               href={GITHUB_REPO_URL}
               className="opacity-60 hover:opacity-100"
             >
               Github
-            </Link>
+            </Link> */}
           </div>
 
           <div>
