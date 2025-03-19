@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { GITHUB_REPO_URL } from "@/lib/constant";
 
 export default function SupportForm() {
     const { data: session } = useSession();
@@ -63,7 +64,7 @@ export default function SupportForm() {
                 <p className="text-lg font-semibold">
                     Are you a developer and want to fix a bug you found?{' '}
                     <Link
-                        href="https://github.com/llmify"
+                        href={GITHUB_REPO_URL}
                         className="text-blue-600 hover:underline font-bold"
                         target="_blank"
                         rel="noopener noreferrer"
