@@ -31,7 +31,7 @@ export const AIModelProviders = {
 
 export const ModelProvidersViaTier: Record<BillingLevel, ModelProviderType[]> =
 	{
-		FREE: ["Anthropic"],
+		FREE: ["Anthropic", "DeepSeek"],
 		PREMIUM: ["Anthropic", "OpenAI", "DeepSeek"],
 		ENTERPRISE: Object.keys(AIModelProviders) as ModelProviderType[],
 	} as const;
@@ -49,4 +49,3 @@ export const ModelProviders = Object.keys(
 
 export type Models<K extends keyof typeof AIModelProviders> =
 	(typeof AIModelProviders)[K][number]["value"];
-
