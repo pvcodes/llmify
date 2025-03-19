@@ -10,6 +10,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
     const session = await getServerSession(authOptions)
     if (!session) return redirect('/')
     const userBillingDetails = await getUserTierDetails(session.user.email)
+    if (!userBillingDetails) return   // should not be here, 'default level is FREE, it will never fail, until DB is down'
 
     return (
         <SidebarProvider>
@@ -17,7 +18,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
                 <div className="flex">
                     <AppSidebar />
                     <div className="w-full p-2 lg:p-4">
-                        <Navbar tier={userBillingDetails?.level ?? null} />
+                        <Navbar tier={userBillingDetails?.level} />
                         {children}
                     </div>
                 </div>

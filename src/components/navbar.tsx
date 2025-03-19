@@ -11,7 +11,7 @@ import SelectAiModel from "./select-ai-model"
 import User from "./user-menu"
 import { BillingLevel } from "@prisma/client"
 
-export default function Navbar({ tier }: { tier: BillingLevel | null }) {
+export default function Navbar({ tier }: { tier: BillingLevel }) {
     const pathName = usePathname()
     const router = useRouter()
     const [sheetOpen, setSheetOpen] = useState(false)

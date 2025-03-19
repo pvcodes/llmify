@@ -2,7 +2,7 @@
 
 import { Message, useChat } from "@ai-sdk/react";
 import { Button } from "@/components/ui/button";
-import { RefreshCcw, Loader2, Settings } from "lucide-react";
+import { RefreshCcw, Loader2, Settings, ArrowDown } from "lucide-react";
 import React, { useCallback, useEffect, useRef } from "react";
 import useChatStore from "@/store/useChatStore";
 import { toast } from "sonner";
@@ -28,7 +28,6 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
 
     // Refs
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
 
     // Rate limiting
     const lastSubmitTime = useRef(0);
@@ -60,11 +59,6 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
             messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
         }
     }, []);
-
-    useEffect(() => {
-        scrollToBottom();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [messages.length]);
 
     // Scroll when streaming
     useEffect(() => {
@@ -120,10 +114,9 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
     }, [status, reload, modelConfig, currProviderApiKey, id]);
 
     return (
-        <div className="flex flex-col h-full w-full max-w-4xl mx-auto min-h-screen">
+        <div className="relative flex flex-col h-full w-full max-w-4xl mx-auto min-h-screen">
             <div
-                ref={containerRef}
-                className="flex-1 overflow-y-auto p-2 sm:p-4"
+                className="flex-1 overflow-y-auto"
             >
                 {messages.map((message) => (
                     <ChatMessage message={message} key={message.id} />
@@ -184,7 +177,7 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
                 <div ref={messagesEndRef} />
             </div>
 
-            <div className="sticky bottom-0 p-2 sm:p-4 border-t bg-background">
+            <div className="sticky bottom-0 p-2 sm:p-4 border-t bg-background z-10">
                 <ChatInputBox
                     input={input}
                     onInputChange={handleInputChange}
@@ -197,6 +190,9 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
                     } : undefined}
                 />
             </div>
-        </div>
+            <div className="sticky bottom-30 right-0 flex justify-end">
+                <Button size='icon' variant='secondary' onClick={scrollToBottom} className="opacity-30 hover:opacity-100"><ArrowDown /></Button>
+            </div>
+        </div >
     );
 }

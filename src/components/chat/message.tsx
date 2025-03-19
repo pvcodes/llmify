@@ -8,14 +8,15 @@ import { cn } from "@/lib/utils";
 import CopyButton from "../copy-button";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const ChatMessage = memo(({ message }: { message: Message }) => {
+const ChatMessage = memo(({ message, className }: { message: Message, className?: string }) => {
     const messageContent = getMessageContent(message);
     const isMobile = useIsMobile()
     return (
         <div
             className={cn(
                 "flex flex-col text-sm",
-                message.role === "user" ? "justify-end items-end" : "justify-start"
+                message.role === "user" ? "justify-end items-end" : "justify-start",
+                className
             )}
         >
             {message.role === "assistant" ? (

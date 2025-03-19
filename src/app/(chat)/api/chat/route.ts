@@ -87,17 +87,20 @@ export async function POST(req: Request) {
 			system: generalPrompt,
 			// prompt: generalPrompt,
 			onFinish: async (res) => {
-				const token = res.usage.totalTokens;
-				await db.billing.update({
-					where: {
-						id: billing.id,
-					},
-					data: {
-						tokenUsage: {
-							increment: token,
+				if (!apiKey) {
+					// using our service
+					const token = res.usage.totalTokens;
+					await db.billing.update({
+						where: {
+							id: billing.id,
 						},
-					},
-				});
+						data: {
+							tokenUsage: {
+								increment: token,
+							},
+						},
+					});
+				}
 
 				await db.message.create({
 					data: {

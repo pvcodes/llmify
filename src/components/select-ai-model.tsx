@@ -25,13 +25,13 @@ import { BillingLevel } from "@prisma/client"
 
 interface SelectAiModelProps {
     setSheetOpen: React.Dispatch<React.SetStateAction<boolean>>
-    tier: BillingLevel | null
+    tier: BillingLevel
 }
 
 export default function SelectAiModel({ setSheetOpen, tier }: SelectAiModelProps) {
     const router = useRouter()
     const [open, setOpen] = React.useState(false)
-    const [availableProviders, setAvailableProviders] = React.useState<ModelProviderType[]>([])
+    const [availableProviders, setAvailableProviders] = React.useState<ModelProviderType[]>(ModelProvidersViaTier[tier])
     const setConfig = useChatStore(state => state.setConfig)
     const config = useChatStore(state => state.config)
     const apiKeys = useChatStore(state => state.apiKeys)
@@ -51,17 +51,12 @@ export default function SelectAiModel({ setSheetOpen, tier }: SelectAiModelProps
                 }
             }
 
-            setAvailableProviders(providers);
+            console.log(providers, 1231321)
+            setAvailableProviders(prev => ([...prev, ...providers]));
         };
-
-        if (!tier) {
-            checkApiKeys()
-        } else {
-            setAvailableProviders(ModelProvidersViaTier[tier])
-        }
-
-
-    }, [cryptoKey, apiKeys, getApiKey, tier]);
+        checkApiKeys()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [apiKeys])
 
     const handleSetupApiKeys = () => {
         setOpen(false);
