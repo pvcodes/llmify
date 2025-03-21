@@ -1,57 +1,20 @@
 import db from "@/db";
 // import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
+import GithubProvider from "next-auth/providers/github";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { NextAuthOptions } from "next-auth";
 
 export const authOptions = {
 	providers: [
-		// CredentialsProvider({
-		// 	name: "Credentials",
-		// 	credentials: {
-		// 		email: { label: "Email", type: "text", placeholder: "" },
-		// 		password: {
-		// 			label: "Password",
-		// 			type: "password",
-		// 			placeholder: "",
-		// 		},
-		// 	},
-		// 	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-		// 	// @ts-expect-error
-		// 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		// 	async authorize(credentials: any) {
-		// 		try {
-		// 			if (!credentials) return null;
-		// 			const user = await db.user.findFirst({
-		// 				where: {
-		// 					email: credentials.email,
-		// 				},
-		// 			});
-
-		// 			if (
-		// 				user &&
-		// 				(await bcrypt.compare(
-		// 					credentials.password,
-		// 					user.password
-		// 				))
-		// 			) {
-		// 				return {
-		// 					id: user.id,
-		// 					email: user.email,
-		// 					name: user.name,
-		// 					image: user.img_url,
-		// 				};
-		// 			}
-		// 		} catch (error) {
-		// 			console.error(error, "123213");
-		// 			return null;
-		// 		}
-		// 	},
-		// }),
 		GoogleProvider({
 			clientId: process.env.GOOGLE_CLIENT_ID!,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+		}),
+		GithubProvider({
+			clientId: process.env.GITHUB_CLIENT_ID!,
+			clientSecret: process.env.GITHUB_CLIENT_SECRET!,
 		}),
 	],
 	callbacks: {

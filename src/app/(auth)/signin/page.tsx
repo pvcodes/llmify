@@ -41,7 +41,6 @@ export default function SignIn() {
                         variant="outline"
                         className="w-full "
                         onClick={() => signIn('github', { callbackUrl: '/new' })}
-                        disabled
                     >
                         <Github className="mr-2 h-4 w-4" />
                         Sign in with GitHub
