@@ -6,7 +6,6 @@ import { RefreshCcw, Loader2, Settings } from "lucide-react";
 import React, { useCallback, useEffect, useRef } from "react";
 import useChatStore from "@/store/useChatStore";
 import { toast } from "sonner";
-import ChatMessage from "./message";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { ModelProvidersViaTier, type ModelProviderType } from "@/lib/ai/models";
 import { useRouter } from "next/navigation";
@@ -14,6 +13,9 @@ import { type Billing } from "@prisma/client";
 import { MAX_FREE_TOKEN } from "@/lib/constant";
 import ChatInputBox from "./chat-inputbox";
 import ScrollToBottom from "../ScrollToBottom";
+import { UIMessage } from "ai";
+import Markdown from "./markdown";
+import UserMessageBox from "./user-message-box";
 
 interface ChatProps {
     id: string;
@@ -29,6 +31,7 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
 
     // Refs
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const chatInputBoxRef = useRef<HTMLTextAreaElement | null>(null);
 
     // Rate limiting
     const lastSubmitTime = useRef(0);
@@ -45,6 +48,7 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
         error,
         reload,
         setInput,
+        setMessages
     } = useChat({
         initialMessages,
     });
@@ -65,7 +69,8 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
         if (status === 'streaming' || status === 'submitted') {
             scrollToBottom();
         }
-    }, [status, scrollToBottom, isNew]);
+        return chatInputBoxRef.current?.focus();
+    }, [status, scrollToBottom]);
 
     // Initialize new chat
     useEffect(() => {
@@ -113,17 +118,64 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
         }
     }, [status, reload, modelConfig, currProviderApiKey, id]);
 
+    const handleEditMessageSubmit = useCallback(async (e: React.FormEvent, messageId: string, messageIndex: number, content: string) => {
+        e.preventDefault()
+        const filterdMessages = messages.slice(0, messageIndex)
+        const messageToUpdate = {
+            id: messages[messageIndex].id,
+            content: content,
+            role: messages[messageIndex].role
+        }
+        console.log(messageToUpdate, 67890)
+        filterdMessages.push(messageToUpdate as UIMessage) // had no other option, if you got, help us
+        setMessages(filterdMessages)
+        reload({
+            body: { id, modelConfig, apiKey: await currProviderApiKey, messageId },
+        });
+        router.refresh()
+    }, [currProviderApiKey, id, messages, modelConfig, reload, setMessages, router])
+
     return (
-        <div className="relative flex flex-col h-full w-full max-w-4xl mx-auto min-h-screen">
-            <div
-                className="flex-1 overflow-y-auto"
-            >
-                {messages.map((message) => (
-                    <ChatMessage message={message} key={message.id} />
+
+        <div className="flex flex-col relative min-h-screen max-w-4xl mx-auto">
+            <div className="flex-1 overflow-y-auto">
+                {messages.map((message, index) => (
+                    <div key={message.id} className="flex flex-col my-2 px-1 md:p-4">
+                        {message.role === "assistant" ? (
+                            <Markdown markdown={message.content} />
+                        ) : (
+                            <UserMessageBox
+                                messageContent={message.content}
+                                handleEditMessageSubmit={handleEditMessageSubmit}
+                                messageId={message.id}
+                                messageIndex={index}
+                            />
+                        )}
+                    </div>
                 ))}
+            </div>
+
+            <div className="flex flex-col relative min-h-screen">
+                <div className="flex-1 overflow-y-auto">
+                    {messages.map((message, index) => (
+                        <div key={message.id} className="flex flex-col">
+                            {message.role === "assistant" ? (
+                                <Markdown markdown={message.content} />
+                            ) : (
+                                <UserMessageBox
+                                    messageContent={message.content}
+                                    handleEditMessageSubmit={handleEditMessageSubmit}
+                                    messageId={message.id}
+                                    messageIndex={index}
+                                />
+                            )}
+                        </div>
+                    ))}
+                </div>
 
                 <div ref={messagesEndRef} />
 
+                {/* Chat Input Box - Fixed at Bottom */}
                 {(status === 'streaming' || status === 'submitted') && (
                     <div className="flex flex-col items-center justify-center p-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
@@ -178,20 +230,25 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
                 )}
             </div>
 
-            <div className="sticky bottom-0 p-2 sm:p-4 border-t bg-background z-10">
+
+            {/* Chat Input Box - Fixed at Bottom */}
+            <div className="sticky bottom-0 left-0 right-0 w-full shadow-md">
                 <ChatInputBox
+                    inputRef={chatInputBoxRef}
                     input={input}
                     onInputChange={handleInputChange}
                     onSubmit={handleFormSubmit}
                     setInput={setInput}
-                    isDisabled={status === 'streaming' || status === 'submitted'}
-                    tokenInfo={userBilling ? {
-                        usage: userBilling.tokenUsage,
-                        limit: MAX_FREE_TOKEN
-                    } : undefined}
+                    isDisabled={status === "streaming" || status === "submitted"}
+                    tokenInfo={
+                        userBilling
+                            ? { usage: userBilling.tokenUsage, limit: MAX_FREE_TOKEN }
+                            : undefined
+                    }
                 />
             </div>
             <ScrollToBottom />
         </div >
+
     );
 }

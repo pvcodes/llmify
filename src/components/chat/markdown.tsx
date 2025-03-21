@@ -1,119 +1,84 @@
-/**
- Shit code?, But hey, it just work: got something better raise a PR and get 20$ bounty
- */
 import React, { useEffect, useState, useRef } from 'react';
 import { marked } from 'marked';
 import { markedHighlight } from 'marked-highlight';
 import sanitizeHtml from 'sanitize-html';
 import hljs from 'highlight.js';
-import 'highlight.js/styles/atom-one-dark.css'; // Keep this import
+import 'highlight.js/styles/atom-one-dark.css';
 import styles from './markdown.module.css';
 import copy from 'copy-to-clipboard';
+import { cn } from '@/lib/utils';
+import CopyButton from '../copy-button';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { BotIcon } from 'lucide-react';
 
-interface MarkdownRendererProps {
-    markdown: string;
-    className?: string;
-}
-
-// Configure Marked with syntax highlighting
+// Configure Marked with syntax highlighting once
 marked.use(
     markedHighlight({
         langPrefix: 'hljs language-',
-        highlight(code, lang) {
+        highlight(code: string, lang: string) {
             const language = hljs.getLanguage(lang) ? lang : 'plaintext';
             return hljs.highlight(code, { language }).value;
         }
     })
 );
 
-const Markdown: React.FC<MarkdownRendererProps> = ({ markdown, className }) => {
-    const [htmlContent, setHtmlContent] = useState('');
-    const markdownContainerRef = useRef<HTMLDivElement>(null);
+// Sanitization config
+const sanitizeConfig = {
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'pre', 'code',
+        'blockquote', 'ul', 'ol', 'li', 'a', 'strong', 'em', 'p'
+    ]),
+    allowedAttributes: {
+        ...sanitizeHtml.defaults.allowedAttributes,
+        '*': ['class', 'id'],
+        'code': ['class'],
+        'pre': ['class'],
+        'a': ['href', 'target', 'rel']
+    }
+};
 
-    // Process the markdown
+interface MarkdownProps {
+    markdown: string;
+    className?: string;
+}
+
+interface CopyButtonElement extends HTMLElement {
+    getAttribute(name: string): string | null;
+    innerHTML: string;
+}
+
+const Markdown: React.FC<MarkdownProps> = ({ markdown, className }) => {
+    const [htmlContent, setHtmlContent] = useState<string>('');
+    const markdownContainerRef = useRef<HTMLDivElement>(null);
+    const isMobile = useIsMobile();
+
     useEffect(() => {
         if (!markdown) return;
 
-        const parseMarkdown = async () => {
+        const renderMarkdown = async (): Promise<void> => {
+            // Parse markdown to HTML
             const parsedContent = await marked(markdown, { gfm: true, breaks: true });
 
-            // Sanitize HTML to prevent XSS
-            const sanitized = sanitizeHtml(parsedContent, {
-                allowedTags: sanitizeHtml.defaults.allowedTags.concat([
-                    'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'pre', 'code', 'blockquote', 'ul', 'ol', 'li', 'a', 'strong', 'em', 'p'
-                ]),
-                allowedAttributes: {
-                    ...sanitizeHtml.defaults.allowedAttributes,
-                    '*': ['class', 'id'],
-                    'code': ['class'],
-                    'pre': ['class'],
-                    'a': ['href', 'target', 'rel']
-                },
-            });
+            // Sanitize HTML
+            const sanitized = sanitizeHtml(parsedContent, sanitizeConfig);
 
-            // Process and insert language headers with copy buttons
+            // Process code blocks with language headers and copy buttons
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = sanitized;
 
-            const codeBlocks = tempDiv.querySelectorAll('pre code');
-            codeBlocks.forEach((block, index) => {
-                const parentPre = block.parentElement;
-                if (!parentPre) return;
-
-                // Remove default padding from pre tags
-                parentPre.style.padding = '0';
-                parentPre.style.margin = '0';
-
-                // Extract code content for copying
-                const codeContent = block.textContent || '';
-
-                // Detect language
-                const classAttr = block.getAttribute('class');
-                const match = classAttr?.match(/language-(\w+)/);
-                const detectedLanguage = match ? match[1].toUpperCase() : 'TEXT';
-
-                // Create a unique ID for this code block
-                const codeBlockId = `code-block-${index}`;
-                block.setAttribute('id', codeBlockId);
-
-                // Ensure syntax highlighting classes are preserved
-                if (classAttr) {
-                    block.setAttribute('class', `${classAttr} hljs`);
-                }
-
-                // Wrap with a language header and copy button
-                const wrapperDiv = document.createElement('div');
-                wrapperDiv.className = 'relative mb-4 border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden text-sm';
-
-                const headerDiv = document.createElement('div');
-                headerDiv.className = 'flex justify-between items-center bg-gray-100 dark:bg-gray-800 p-2 text-xs font-mono text-gray-600 dark:text-gray-300';
-                headerDiv.innerHTML = `<span>${detectedLanguage}</span>`;
-
-                // Create copy button with data attribute to store content
-                const copyButton = document.createElement('button');
-                copyButton.className = 'copy-code-button text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition z-40';
-                copyButton.innerHTML = 'Copy';
-                copyButton.setAttribute('data-clipboard-content', codeContent);
-                copyButton.setAttribute('data-code-id', codeBlockId);
-
-                headerDiv.appendChild(copyButton);
-                wrapperDiv.appendChild(headerDiv);
-
-                // Append code block to wrapper
-                wrapperDiv.appendChild(parentPre.cloneNode(true));
-                parentPre.replaceWith(wrapperDiv);
-            });
+            // Enhance code blocks
+            enhanceCodeBlocks(tempDiv);
 
             setHtmlContent(tempDiv.innerHTML);
         };
 
-        parseMarkdown();
+        renderMarkdown();
     }, [markdown]);
 
-    // Add event listener for copy buttons after content is rendered
+    // Handle copy button clicks
     useEffect(() => {
-        const handleCopyClick = (e: MouseEvent) => {
-            const target = e.target as HTMLElement;
+        const handleCopyClick = (e: Event): void => {
+            const target = e.target as CopyButtonElement;
             if (target.classList.contains('copy-code-button')) {
                 const content = target.getAttribute('data-clipboard-content');
                 if (content) {
@@ -127,40 +92,88 @@ const Markdown: React.FC<MarkdownRendererProps> = ({ markdown, className }) => {
             }
         };
 
-        // Add event listener to the markdown container
         const container = markdownContainerRef.current;
         if (container) {
-            container.addEventListener('click', handleCopyClick as EventListener);
+            container.addEventListener('click', handleCopyClick);
+            return () => container.removeEventListener('click', handleCopyClick);
         }
+    }, [htmlContent]);
 
-        // Cleanup function
-        return () => {
-            if (container) {
-                container.removeEventListener('click', handleCopyClick as EventListener);
-            }
-        };
-    }, [htmlContent]); // Re-run when htmlContent changes
-
-    // Force highlighting after content is rendered
+    // Apply syntax highlighting after rendering
     useEffect(() => {
         if (htmlContent && markdownContainerRef.current) {
-            // Force highlight.js to re-highlight all code blocks
             const codeBlocks = markdownContainerRef.current.querySelectorAll('pre code');
-            codeBlocks.forEach((block) => {
-                hljs.highlightElement(block as HTMLElement);
-            });
+            codeBlocks.forEach(block => hljs.highlightElement(block as HTMLElement));
         }
     }, [htmlContent]);
 
     return (
-        <div className="w-full">
-            <div
-                ref={markdownContainerRef}
-                className={`${styles.markdown} ${className || ''}`}
-                dangerouslySetInnerHTML={{ __html: htmlContent }}
-            />
+        <div className={cn("relative max-w-sm lg:max-w-2xl bg-gray-100 p-2.5 dark:bg-gray-800 rounded-lg group text-sm my-1", className)}>
+            <BotIcon className="w-8 h-8 bg-gray-50 rounded p-1 text-black dark:text-white dark:bg-gray-800 mb-2" />
+            <div className="w-full">
+                <div
+                    ref={markdownContainerRef}
+                    className={cn(styles.markdown)}
+                    dangerouslySetInnerHTML={{ __html: htmlContent }}
+                />
+            </div>
+            <div className={cn(
+                'absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200',
+                isMobile && 'opacity-100'
+            )}>
+                <CopyButton content={markdown} className="w-4 h-4 bg-none bg-accent-background" />
+            </div>
         </div>
     );
 };
 
-export default Markdown
+// Helper function to enhance code blocks
+function enhanceCodeBlocks(container: HTMLDivElement): void {
+    const codeBlocks = container.querySelectorAll('pre code');
+
+    codeBlocks.forEach((block, index) => {
+        const parentPre = block.parentElement;
+        if (!parentPre) return;
+
+        // Reset pre styling
+        parentPre.style.padding = '0';
+        parentPre.style.margin = '0';
+
+        // Get code content and language
+        const codeContent = block.textContent || '';
+        const classAttr = block.getAttribute('class');
+        const match = classAttr?.match(/language-(\w+)/);
+        const language = match ? match[1].toUpperCase() : 'TEXT';
+
+        // Create unique ID
+        const codeBlockId = `code-block-${index}`;
+        block.setAttribute('id', codeBlockId);
+
+        // Preserve syntax highlighting classes
+        if (classAttr) {
+            block.setAttribute('class', `${classAttr} hljs`);
+        }
+
+        // Create wrapper with language header and copy button
+        const wrapper = document.createElement('div');
+        wrapper.className = 'relative mb-4 border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden text-sm';
+
+        const header = document.createElement('div');
+        header.className = 'flex justify-between items-center bg-gray-100 dark:bg-gray-800 p-2 text-xs font-mono text-gray-600 dark:text-gray-300';
+        header.innerHTML = `<span>${language}</span>`;
+
+        const copyButton = document.createElement('button');
+        copyButton.className = 'copy-code-button text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition z-40';
+        copyButton.innerHTML = 'Copy';
+        copyButton.setAttribute('data-clipboard-content', codeContent);
+        copyButton.setAttribute('data-code-id', codeBlockId);
+
+        header.appendChild(copyButton);
+        wrapper.appendChild(header);
+        wrapper.appendChild(parentPre.cloneNode(true));
+
+        parentPre.replaceWith(wrapper);
+    });
+}
+
+export default Markdown;

@@ -1,7 +1,7 @@
 "use client"
 
 import { Terminal } from "lucide-react"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import useChatStore from "@/store/useChatStore"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -18,6 +18,8 @@ export default function NewChat() {
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
   const router = useRouter()
+
+  const chatInputBoxRef = useRef<HTMLTextAreaElement| null>(null);
 
   const handleFirstChat = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -70,6 +72,7 @@ export default function NewChat() {
       <div className="flex flex-col items-center justify-center h-screen px-4 sm:px-6 md:px-8 lg:px-10">
         <div className="flex w-full max-w-2xl gap-2">
           <ChatInputBox input={prompt}
+            inputRef={chatInputBoxRef}
             onInputChange={(e) => setPrompt(e.target.value)}
             onSubmit={handleFirstChat}
             isLoading={loading}

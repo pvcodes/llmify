@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef } from "react";
+// Need Optimizations, and more
+import React, { useCallback, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Loader2, SendHorizonal } from "lucide-react";
@@ -21,6 +22,7 @@ interface ChatInputBoxProps {
         usage: number;
         limit: number;
     };
+    inputRef: React.RefObject<HTMLTextAreaElement | null>
 }
 
 export default function ChatInputBox({
@@ -28,6 +30,7 @@ export default function ChatInputBox({
     onInputChange,
     onSubmit,
     setInput,
+    inputRef,
     isDisabled = false,
     placeholder = "Type a message...",
     showShortcuts = true,
@@ -35,7 +38,6 @@ export default function ChatInputBox({
     tokenInfo,
     isLoading = false
 }: ChatInputBoxProps) {
-    const inputRef = useRef<HTMLTextAreaElement>(null);
     const isMobile = useIsMobile();
     const isMac = typeof navigator !== 'undefined' ? navigator.platform.includes('Mac') : false;
 
@@ -53,7 +55,7 @@ export default function ChatInputBox({
 
                 // Set cursor position after inserted newline
                 setTimeout(() => {
-                    if (inputRef.current) {
+                    if (inputRef?.current) {
                         inputRef.current.selectionStart = start + 1;
                         inputRef.current.selectionEnd = start + 1;
                         inputRef.current.focus();
@@ -65,18 +67,18 @@ export default function ChatInputBox({
             e.preventDefault();
             onSubmit(e);
         }
-    }, [input, setInput, onSubmit]);
+    }, [input, setInput, onSubmit, inputRef]);
 
     // Auto-resize textarea based on content
     useEffect(() => {
-        if (inputRef.current) {
+        if (inputRef?.current) {
             inputRef.current.style.height = 'auto';
             inputRef.current.style.height = `${Math.min(inputRef.current.scrollHeight, maxHeight)}px`;
         }
-    }, [input, maxHeight]);
+    }, [input, maxHeight, inputRef]);
 
     return (
-        <div className="w-full flex flex-col gap-2">
+        <div className="w-full flex flex-col gap-2 mt-5 p-2.5 bg-background">
             <form onSubmit={onSubmit} className="flex items-center gap-2 w-full">
                 <Textarea
                     ref={inputRef}
