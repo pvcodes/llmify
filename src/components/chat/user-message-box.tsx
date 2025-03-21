@@ -1,6 +1,6 @@
 import { PenLine } from "lucide-react";
 import { Button } from "../ui/button";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { Textarea } from "../ui/textarea";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -28,11 +28,6 @@ export default function UserMessageBox({
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [isVisible, setIsVisible] = useState(false);
     const isMobile = useIsMobile();
-
-    useEffect(() => {
-        const find = messageContent.split('/n')
-        console.log(find, 1213123)
-    })
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {

@@ -51,7 +51,6 @@ export default function SelectAiModel({ setSheetOpen, tier }: SelectAiModelProps
                 }
             }
 
-            console.log(providers, 1231321)
             setAvailableProviders(prev => ([...prev, ...providers]));
         };
         checkApiKeys()

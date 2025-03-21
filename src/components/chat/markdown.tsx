@@ -47,86 +47,6 @@ interface CopyButtonElement extends HTMLElement {
     innerHTML: string;
 }
 
-const Markdown: React.FC<MarkdownProps> = ({ markdown, className }) => {
-    const [htmlContent, setHtmlContent] = useState<string>('');
-    const markdownContainerRef = useRef<HTMLDivElement>(null);
-    const isMobile = useIsMobile();
-
-    useEffect(() => {
-        if (!markdown) return;
-
-        const renderMarkdown = async (): Promise<void> => {
-            // Parse markdown to HTML
-            const parsedContent = await marked(markdown, { gfm: true, breaks: true });
-
-            // Sanitize HTML
-            const sanitized = sanitizeHtml(parsedContent, sanitizeConfig);
-
-            // Process code blocks with language headers and copy buttons
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = sanitized;
-
-            // Enhance code blocks
-            enhanceCodeBlocks(tempDiv);
-
-            setHtmlContent(tempDiv.innerHTML);
-        };
-
-        renderMarkdown();
-    }, [markdown]);
-
-    // Handle copy button clicks
-    useEffect(() => {
-        const handleCopyClick = (e: Event): void => {
-            const target = e.target as CopyButtonElement;
-            if (target.classList.contains('copy-code-button')) {
-                const content = target.getAttribute('data-clipboard-content');
-                if (content) {
-                    copy(content);
-                    const originalText = target.innerHTML;
-                    target.innerHTML = 'Copied!';
-                    setTimeout(() => {
-                        target.innerHTML = originalText;
-                    }, 2000);
-                }
-            }
-        };
-
-        const container = markdownContainerRef.current;
-        if (container) {
-            container.addEventListener('click', handleCopyClick);
-            return () => container.removeEventListener('click', handleCopyClick);
-        }
-    }, [htmlContent]);
-
-    // Apply syntax highlighting after rendering
-    useEffect(() => {
-        if (htmlContent && markdownContainerRef.current) {
-            const codeBlocks = markdownContainerRef.current.querySelectorAll('pre code');
-            codeBlocks.forEach(block => hljs.highlightElement(block as HTMLElement));
-        }
-    }, [htmlContent]);
-
-    return (
-        <div className={cn("relative max-w-sm lg:max-w-2xl bg-gray-100 p-2.5 dark:bg-gray-800 rounded-lg group text-sm my-1", className)}>
-            <BotIcon className="w-8 h-8 bg-gray-50 rounded p-1 text-black dark:text-white dark:bg-gray-800 mb-2" />
-            <div className="w-full">
-                <div
-                    ref={markdownContainerRef}
-                    className={cn(styles.markdown)}
-                    dangerouslySetInnerHTML={{ __html: htmlContent }}
-                />
-            </div>
-            <div className={cn(
-                'absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200',
-                isMobile && 'opacity-100'
-            )}>
-                <CopyButton content={markdown} className="w-4 h-4 bg-none bg-accent-background" />
-            </div>
-        </div>
-    );
-};
-
 // Helper function to enhance code blocks
 function enhanceCodeBlocks(container: HTMLDivElement): void {
     const codeBlocks = container.querySelectorAll('pre code');
@@ -176,4 +96,94 @@ function enhanceCodeBlocks(container: HTMLDivElement): void {
     });
 }
 
-export default Markdown;
+const Markdown: React.FC<MarkdownProps> = ({ markdown, className }) => {
+    const [htmlContent, setHtmlContent] = useState<string>('');
+    const isMobile = useIsMobile();
+    const markdownContainerRef = useRef<HTMLDivElement>(null);
+
+    // Process markdown once on component mount or when markdown changes
+    useEffect(() => {
+        if (!markdown) {
+            setHtmlContent('');
+            return;
+        }
+
+        const renderMarkdown = async (): Promise<void> => {
+            try {
+                // Parse markdown to HTML
+                const parsedContent = await marked(markdown, { gfm: true, breaks: true });
+
+                // Sanitize HTML
+                const sanitized = sanitizeHtml(parsedContent, sanitizeConfig);
+
+                // Process code blocks with language headers and copy buttons
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = sanitized;
+
+                // Enhance code blocks before setting HTML content
+                enhanceCodeBlocks(tempDiv);
+
+                // Apply syntax highlighting directly to the temp div
+                const codeBlocks = tempDiv.querySelectorAll('pre code');
+                codeBlocks.forEach(block => hljs.highlightElement(block as HTMLElement));
+
+                // Set state once with fully processed content
+                setHtmlContent(tempDiv.innerHTML);
+            } catch (error) {
+                console.error('Error rendering markdown:', error);
+                setHtmlContent(`<p>Error rendering markdown content</p>`);
+            } finally {
+            }
+        };
+
+        renderMarkdown();
+    }, [markdown]);
+
+    // Handle copy button clicks
+    useEffect(() => {
+        const handleCopyClick = (e: Event): void => {
+            const target = e.target as CopyButtonElement;
+            if (target.classList.contains('copy-code-button')) {
+                const content = target.getAttribute('data-clipboard-content');
+                if (content) {
+                    copy(content);
+                    const originalText = target.innerHTML;
+                    target.innerHTML = 'Copied!';
+                    setTimeout(() => {
+                        target.innerHTML = originalText;
+                    }, 2000);
+                }
+            }
+        };
+
+        const container = markdownContainerRef.current;
+        if (container) {
+            container.addEventListener('click', handleCopyClick);
+            return () => container.removeEventListener('click', handleCopyClick);
+        }
+    }, [htmlContent]);
+
+    // Calculate minimum height based on content length to reduce layout shifts
+    const minHeight = markdown ? Math.min(100, markdown.length / 10) : 0;
+
+    return (
+        <div className={cn("relative max-w-sm lg:max-w-2xl bg-gray-100 p-2.5 dark:bg-gray-800 rounded-lg group text-sm my-1", className)}>
+            <BotIcon className="w-8 h-8 bg-gray-50 rounded p-1 text-black dark:text-white dark:bg-gray-800 mb-2" />
+            <div className="w-full" style={{ minHeight: `${minHeight}px`, transition: 'min-height 0.2s ease-in-out' }}>
+                <div
+                    ref={markdownContainerRef}
+                    className={cn(styles.markdown, "transition-opacity duration-200 opacity-100")}
+                    dangerouslySetInnerHTML={{ __html: htmlContent }}
+                />
+            </div>
+            <div className={cn(
+                'absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200',
+                isMobile && 'opacity-100'
+            )}>
+                <CopyButton content={markdown} className="w-4 h-4 bg-none bg-accent-background" />
+            </div>
+        </div>
+    );
+};
+
+export default React.memo(Markdown);

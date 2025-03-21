@@ -72,8 +72,8 @@ const decrypt = async (cipherText: string, key: CryptoKey): Promise<string> => {
 // Zustand Store Interface
 interface ChatState {
 	config: {
-		provider: ModelProviderType | null;
-		model: { label: string; value: Models<ModelProviderType> } | null;
+		provider: ModelProviderType;
+		model: { label: string; value: Models<ModelProviderType> };
 	} | null;
 	apiKeys: Partial<Record<ModelProviderType, string>>; // Encrypted in storage
 	cryptoKey: CryptoKey | null;

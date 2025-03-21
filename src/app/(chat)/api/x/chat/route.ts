@@ -3,6 +3,11 @@ import db from "@/db";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/app/(auth)/auth";
 import { payloadSchema, type PayloadType } from "./schema";
+import { generateText } from "ai";
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { CHAT_TITLE_PROMPT } from "@/lib/ai/prompt";
+
+const anthropic = createAnthropic({ apiKey: process.env.API_KEY_ANTHROPIC });
 
 export async function POST(req: NextRequest) {
 	try {
@@ -21,9 +26,17 @@ export async function POST(req: NextRequest) {
 			);
 		}
 		const { id, prompt } = parseResult.data;
+
+		const { text: name } = await generateText({
+			model: anthropic("claude-3-5-haiku-latest"),
+			system: CHAT_TITLE_PROMPT,
+			prompt,
+		});
+
 		const newChat = await db.chat.create({
 			data: {
 				id,
+				name,
 				user: {
 					connect: {
 						email: user?.email,
