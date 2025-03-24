@@ -3,7 +3,7 @@
 import { Message, useChat } from "@ai-sdk/react";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw, Loader2, Settings } from "lucide-react";
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import useChatStore from "@/store/useChatStore";
 import { toast } from "sonner";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -15,7 +15,9 @@ import ScrollToBottom from "../ScrollToBottom";
 import { UIMessage } from "ai";
 import Markdown from "./markdown";
 import UserMessageBox from "./user-message-box";
-import { isApiKeyRequired } from "@/lib/utils";
+import { cn, hasApiKeyForSelectedModel } from "@/lib/utils";
+import { Badge } from "../ui/badge";
+import { Switch } from "../ui/switch";
 
 interface ChatProps {
     id: string;
@@ -27,6 +29,7 @@ interface ChatProps {
 export default function Chat({ id, initialMessages, isNew = false, userBilling }: ChatProps) {
     const modelConfig = useChatStore(state => state.config);
     const getApiKey = useChatStore(state => state.getApiKey);
+    const apiKeys = useChatStore(state => state.apiKeys);
     const router = useRouter();
 
     // Refs
@@ -36,6 +39,19 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
     // Rate limiting
     const lastSubmitTime = useRef(0);
     const RATE_LIMIT_MS = 1000;
+
+    const hasSelectedProviderApiKey = useCallback(() => {
+        if (modelConfig?.provider && hasApiKeyForSelectedModel(modelConfig.provider, apiKeys)) return true
+        return false
+    }, [modelConfig, apiKeys])()
+
+    const [useSelectedProviderApiKey, setUseSelectedProviderApiKey] = useState(hasSelectedProviderApiKey)
+
+    const getSelectedProviderApiKey = useCallback(async () => {
+        const apiKey = modelConfig?.provider ? await getApiKey(modelConfig.provider) : undefined;
+        return apiKey
+    }, [modelConfig, getApiKey])
+
 
     // Chat state
     const {
@@ -56,10 +72,8 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
     const dataToSendToAI = useCallback(async () => ({
         id,
         modelConfig,
-        apiKey: modelConfig && isApiKeyRequired(userBilling?.level, modelConfig.provider)
-            ? await getApiKey(modelConfig.provider)
-            : undefined
-    }), [id, modelConfig, userBilling?.level, getApiKey]);
+        apiKey: useSelectedProviderApiKey ? await getSelectedProviderApiKey() : undefined
+    }), [id, modelConfig, getSelectedProviderApiKey, useSelectedProviderApiKey]);
 
     const handleValidations = useCallback(() => {
         const validationErrors = [
@@ -230,6 +244,38 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
                 />
             </div>
             <ScrollToBottom />
+
+            <div className="flex items-center justify-between p-3 rounded-lg border bg-card text-card-foreground shadow-sm transition-all">
+                <div className="flex items-center gap-2">
+                    <div className={cn(
+                        "h-2 w-2 rounded-full transition-colors",
+                        useSelectedProviderApiKey
+                            ? "bg-green-500 animate-pulse"
+                            : "bg-blue-500"
+                    )} />
+
+                    <Badge variant="secondary" className="font-normal">
+                        {useSelectedProviderApiKey
+                            ? `Using ${modelConfig?.provider}'s API Key provided by you!`
+                            : "Powered by LLMify"}
+                    </Badge>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">
+                        API Key
+                    </span>
+                    <Switch
+                        checked={useSelectedProviderApiKey}
+                        onCheckedChange={setUseSelectedProviderApiKey}
+                        disabled={!hasSelectedProviderApiKey}
+                        className={cn(
+                            "data-[state=checked]:bg-primary",
+                            !hasSelectedProviderApiKey && "opacity-50 cursor-not-allowed"
+                        )}
+                    />
+                </div>
+            </div>
         </div>
     );
 }

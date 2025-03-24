@@ -13,15 +13,10 @@ export const generateChatId = () => {
 	return chatId;
 };
 
-export const isApiKeyRequired = (
-	tier: BillingLevel,
-	modelProvider: ModelProviderType
+export const hasApiKeyForSelectedModel = (
+	modelProvider: ModelProviderType,
+	apiKeys: Partial<Record<ModelProviderType, string>>
 ) => {
-	// if the user is accessing that model which is not included in his tier
-	if (tier && modelProvider) {
-		if (ModelProvidersViaTier[tier].includes(modelProvider)) {
-			return false;
-		}
-	}
-	return true;
+	if (Object.keys(apiKeys).includes(modelProvider)) return true;
+	return false;
 };
