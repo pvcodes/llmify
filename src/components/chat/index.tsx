@@ -161,7 +161,10 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
         const fetchInitialResponse = async () => {
             if (isNew) {
                 reload({
-                    body: await dataToSendToAI(),
+                    body: { modelConfig: (await dataToSendToAI()).modelConfig },
+                    headers: {
+                        'x-provider-key': (await dataToSendToAI()).apiKey as string
+                    }
                 });
             }
         };

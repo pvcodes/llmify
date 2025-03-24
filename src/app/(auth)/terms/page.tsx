@@ -30,7 +30,7 @@ export default function LegalDocuments() {
                 },
                 {
                     subtitle: "User Access",
-                    text: "Access is granted based on subscription tiers: Free, Premium ($2.99/month), and Enterprise ($9.99/month)."
+                    text: "Access is granted based on subscription tiers: Free, Premium (₹299/month), and Enterprise (₹999/month)."
                 }
             ]
         },
