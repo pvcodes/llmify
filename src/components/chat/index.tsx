@@ -12,13 +12,12 @@ import { type Billing } from "@prisma/client";
 import { MAX_FREE_TOKEN } from "@/lib/constant";
 import ChatInputBox from "./chat-inputbox";
 import ScrollToBottom from "../ScrollToBottom";
+import { UIMessage } from "ai";
 import Markdown from "./markdown";
 import UserMessageBox from "./user-message-box";
 import { cn, hasApiKeyForSelectedModel } from "@/lib/utils";
 import { Badge } from "../ui/badge";
 import { Switch } from "../ui/switch";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { type UIMessage } from "ai";
 
 interface ChatProps {
     id: string;
@@ -32,40 +31,27 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
     const getApiKey = useChatStore(state => state.getApiKey);
     const apiKeys = useChatStore(state => state.apiKeys);
     const router = useRouter();
-    const isMobile = useIsMobile()
 
     // Refs
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const chatInputBoxRef = useRef<HTMLTextAreaElement | null>(null);
-    const shouldFocusInput = useRef(true);
 
     // Rate limiting
     const lastSubmitTime = useRef(0);
     const RATE_LIMIT_MS = 1000;
 
-    // Fix: Extract hasSelectedProviderApiKey to a more stable value
     const hasSelectedProviderApiKey = useCallback(() => {
-        return modelConfig?.provider && hasApiKeyForSelectedModel(modelConfig.provider, apiKeys);
-    }, [modelConfig?.provider, apiKeys]);
+        if (modelConfig?.provider && hasApiKeyForSelectedModel(modelConfig.provider, apiKeys)) return true
+        return false
+    }, [modelConfig, apiKeys])()
 
-    const [useSelectedProviderApiKey, setUseSelectedProviderApiKey] = useState(() => hasSelectedProviderApiKey());
-    const [isLoadingApiKey, setIsLoadingApiKey] = useState(false);
+    const [useSelectedProviderApiKey, setUseSelectedProviderApiKey] = useState(hasSelectedProviderApiKey)
 
-    // Fix: Memoize the getSelectedProviderApiKey function
     const getSelectedProviderApiKey = useCallback(async () => {
-        if (!modelConfig?.provider || !useSelectedProviderApiKey) return undefined;
+        const apiKey = modelConfig?.provider ? await getApiKey(modelConfig.provider) : undefined;
+        return apiKey
+    }, [modelConfig, getApiKey])
 
-        setIsLoadingApiKey(true);
-        try {
-            const apiKey = await getApiKey(modelConfig.provider);
-            return apiKey;
-        } catch (error) {
-            console.error("Error fetching API key:", error);
-            return undefined;
-        } finally {
-            setIsLoadingApiKey(false);
-        }
-    }, [modelConfig?.provider, getApiKey, useSelectedProviderApiKey]);
 
     // Chat state
     const {
@@ -85,41 +71,20 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
         api: `/api/chat/${id}`,
     });
 
-    // Fix: Move API key check to a separate effect
-    useEffect(() => {
-        // Update API key usage status when provider changes
-        setUseSelectedProviderApiKey(hasSelectedProviderApiKey());
-    }, [modelConfig?.provider, hasSelectedProviderApiKey]);
-
-    // Fix: Optimize dataToSendToAI to prevent unnecessary API calls
-    const dataToSendToAI = useCallback(async () => {
-        let apiKey = undefined;
-
-        if (useSelectedProviderApiKey && modelConfig?.provider) {
-            apiKey = await getSelectedProviderApiKey();
-
-            // Warn if API key is undefined but user wants to use their own key
-            if (!apiKey) {
-                toast.warning(`No API key found for ${modelConfig.provider}. Using LLMify's API.`);
-            }
-        }
-
-        return {
-            modelConfig,
-            apiKey
-        };
-    }, [modelConfig, getSelectedProviderApiKey, useSelectedProviderApiKey]);
+    const dataToSendToAI = useCallback(async () => ({
+        modelConfig,
+        apiKey: useSelectedProviderApiKey ? await getSelectedProviderApiKey() : undefined
+    }), [modelConfig, getSelectedProviderApiKey, useSelectedProviderApiKey]);
 
     const handleValidations = useCallback(() => {
         const validationErrors = [
             { condition: !modelConfig, message: "Choose a model from the navbar" },
             { condition: Date.now() - lastSubmitTime.current < RATE_LIMIT_MS, message: "Please wait a moment before sending another message" },
-            { condition: status === 'streaming', message: "Assistant is still typing!" },
-            { condition: isLoadingApiKey, message: "Loading API key..." }
+            { condition: status === 'streaming', message: "Assistant is still typing!" }
         ];
         const error = validationErrors.find(validation => validation.condition);
         return error;
-    }, [modelConfig, status, isLoadingApiKey]);
+    }, [modelConfig, status]);
 
     const handleFormSubmit = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
@@ -129,70 +94,54 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
 
         lastSubmitTime.current = Date.now();
 
-        const data = await dataToSendToAI();
-
         handleSubmit(e, {
             body: {
-                modelConfig: data.modelConfig
+                modelConfig: (await dataToSendToAI()).modelConfig
             },
-            headers: data.apiKey ? {
-                'x-provider-key': data.apiKey
-            } : undefined
+            headers: {
+                'x-provider-key': (await dataToSendToAI()).apiKey as string
+            }
         });
 
         router.refresh();
     }, [handleValidations, handleSubmit, router, dataToSendToAI]);
 
-    // Fix: Improve retry handler to include better error reporting
+    // Retry handler
     const handleRetry = useCallback(async () => {
         const error = handleValidations();
         if (error) return toast(error.message);
 
         if (status === 'error') {
-            try {
-                const data = await dataToSendToAI();
-
-                reload({
-                    body: {
-                        modelConfig: data.modelConfig
-                    },
-                    headers: data.apiKey ? {
-                        'x-provider-key': data.apiKey
-                    } : undefined
-                });
-            } catch (err) {
-                console.error(err)
-                toast.error("Failed to retry. Please check your connection and try again.");
-            }
+            reload({
+                body: {
+                    modelConfig: (await dataToSendToAI()).modelConfig
+                },
+                headers: {
+                    'x-provider-key': (await dataToSendToAI()).apiKey as string
+                }
+            });
         }
     }, [handleValidations, dataToSendToAI, reload, status]);
 
-    // Fix: Fix type issues with edited message handling
     const handleEditMessageSubmit = useCallback(async (e: React.FormEvent, messageId: string, messageIndex: number, content: string) => {
         e.preventDefault();
 
-        const filteredMessages = messages.slice(0, messageIndex);
-        const messageToUpdate: Message = {
+        const filterdMessages = messages.slice(0, messageIndex);
+        const messageToUpdate = {
             id: messages[messageIndex].id,
             content: content,
-            role: messages[messageIndex].role as "user" | "assistant" | "system"
+            role: messages[messageIndex].role
         };
 
-        filteredMessages.push(messageToUpdate as UIMessage);
-        setMessages(filteredMessages);
-
-        const data = await dataToSendToAI();
+        filterdMessages.push(messageToUpdate as UIMessage); // had no other option, if you got, help us
+        setMessages(filterdMessages);
 
         reload({
-            body: {
-                modelConfig: data.modelConfig,
-                editedMessageId: messageId
-            },
-            headers: data.apiKey ? {
-                'x-provider-key': data.apiKey
-            } : undefined
+            body: { modelConfig: (await dataToSendToAI()).modelConfig, editedMessageId: messageId },
+            headers: {
+                'x-provider-key': (await dataToSendToAI()).apiKey as string
+            }
         });
-
         router.refresh();
     }, [dataToSendToAI, messages, setMessages, reload, router]);
 
@@ -201,60 +150,28 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, []);
 
-    // Fix: Improve focus handling to avoid unnecessary focus changes
+    // Scroll when streaming
     useEffect(() => {
-        if (status === 'streaming' || status === 'submitted') {
-            scrollToBottom();
-        }
-
-        // Only focus input when component mounts or after a message is sent
-        if (shouldFocusInput.current && chatInputBoxRef.current) {
-            chatInputBoxRef.current.focus();
-            // Reset after focusing to avoid focusing on every status change
-            shouldFocusInput.current = false;
-        }
+        if (status === 'streaming' || status === 'submitted') scrollToBottom();
+        return chatInputBoxRef.current?.focus();
     }, [status, scrollToBottom]);
-
-    // Reset focus flag after user interaction
-    useEffect(() => {
-        const handleUserInteraction = () => {
-            shouldFocusInput.current = false;
-        };
-
-        window.addEventListener('mousedown', handleUserInteraction);
-        window.addEventListener('keydown', handleUserInteraction);
-
-        return () => {
-            window.removeEventListener('mousedown', handleUserInteraction);
-            window.removeEventListener('keydown', handleUserInteraction);
-        };
-    }, []);
 
     // Initialize new chat
     useEffect(() => {
         const fetchInitialResponse = async () => {
             if (isNew) {
-                try {
-                    const data = await dataToSendToAI();
-
-                    reload({
-                        body: { modelConfig: data.modelConfig },
-                        headers: data.apiKey ? {
-                            'x-provider-key': data.apiKey
-                        } : undefined
-                    });
-
-                    // Set focus flag to true after initiating a new chat
-                    shouldFocusInput.current = true;
-                } catch (err) {
-                    console.error(err)
-                    toast.error("Failed to start new chat. Please try again.");
-                }
+                reload({
+                    body: { modelConfig: (await dataToSendToAI()).modelConfig },
+                    headers: {
+                        'x-provider-key': (await dataToSendToAI()).apiKey as string
+                    }
+                });
             }
         };
 
         fetchInitialResponse();
-    }, [isNew, dataToSendToAI, reload]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <div className="flex flex-col relative min-h-screen max-w-4xl mx-auto">
@@ -336,7 +253,7 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
                     onInputChange={handleInputChange}
                     onSubmit={handleFormSubmit}
                     setInput={setInput}
-                    isDisabled={status === "streaming" || status === "submitted" || isLoadingApiKey}
+                    isDisabled={status === "streaming" || status === "submitted"}
                     tokenInfo={
                         userBilling
                             ? { usage: userBilling.tokenUsage, limit: MAX_FREE_TOKEN }
@@ -351,28 +268,28 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
                     <div className={cn(
                         "h-2 w-2 rounded-full transition-colors",
                         useSelectedProviderApiKey
-                            ? isLoadingApiKey ? "bg-yellow-500 animate-pulse" : "bg-green-500 animate-pulse"
+                            ? "bg-green-500 animate-pulse"
                             : "bg-blue-500"
                     )} />
 
                     <Badge variant="secondary" className="font-normal">
                         {useSelectedProviderApiKey
-                            ? isLoadingApiKey
-                                ? "Loading API key..."
-                                : `Using ${modelConfig?.provider}'s API Key provided by you!`
+                            ? `Using ${modelConfig?.provider}'s API Key provided by you!`
                             : "Powered by LLMify"}
                     </Badge>
                 </div>
 
                 <div className="flex items-center gap-2">
-                    {isMobile && <span className="text-sm text-muted-foreground">API Key</span>}
+                    <span className="text-sm text-muted-foreground">
+                        API Key
+                    </span>
                     <Switch
                         checked={useSelectedProviderApiKey}
                         onCheckedChange={setUseSelectedProviderApiKey}
-                        disabled={!hasSelectedProviderApiKey() || isLoadingApiKey}
+                        disabled={!hasSelectedProviderApiKey}
                         className={cn(
                             "data-[state=checked]:bg-primary",
-                            (!hasSelectedProviderApiKey() || isLoadingApiKey) && "opacity-50 cursor-not-allowed"
+                            !hasSelectedProviderApiKey && "opacity-50 cursor-not-allowed"
                         )}
                     />
                 </div>
