@@ -41,7 +41,7 @@ const pricingList: PricingProps[] = [
   {
     title: "Premium",
     popular: 1,
-    price: 2.99,
+    price: 299,
     description:
       "Unlock more potential with our Premium plan.",
     buttonText: "Get Started",
@@ -55,7 +55,7 @@ const pricingList: PricingProps[] = [
   {
     title: "Enterprise",
     popular: 0,
-    price: 9.99,
+    price: 999,
     description:
       "Maximize your capabilities with our Enterprise plan.",
     buttonText: "Contact Us",
@@ -108,7 +108,7 @@ export const Pricing = () => {
                 ) : null}
               </CardTitle>
               <div>
-                <span className="text-3xl font-bold">${pricing.price}</span>
+                <span className="text-3xl font-bold">₹{pricing.price}</span>
                 <span className="text-muted-foreground"> /month</span>
               </div>
 
