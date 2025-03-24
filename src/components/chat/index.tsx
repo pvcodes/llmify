@@ -66,14 +66,15 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
         setInput,
         setMessages
     } = useChat({
+        id,
         initialMessages,
+        api: `/api/chat/${id}`,
     });
 
     const dataToSendToAI = useCallback(async () => ({
-        id,
         modelConfig,
         apiKey: useSelectedProviderApiKey ? await getSelectedProviderApiKey() : undefined
-    }), [id, modelConfig, getSelectedProviderApiKey, useSelectedProviderApiKey]);
+    }), [modelConfig, getSelectedProviderApiKey, useSelectedProviderApiKey]);
 
     const handleValidations = useCallback(() => {
         const validationErrors = [
@@ -93,10 +94,17 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
 
         lastSubmitTime.current = Date.now();
 
-        handleSubmit(e, { body: await dataToSendToAI() });
+        handleSubmit(e, {
+            body: {
+                modelConfig: (await dataToSendToAI()).modelConfig
+            },
+            headers: {
+                'x-provider-key': (await dataToSendToAI()).apiKey as string
+            }
+        });
 
         router.refresh();
-    }, [handleValidations, dataToSendToAI, handleSubmit, router]);
+    }, [handleValidations, handleSubmit, router, dataToSendToAI]);
 
     // Retry handler
     const handleRetry = useCallback(async () => {
@@ -105,7 +113,12 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
 
         if (status === 'error') {
             reload({
-                body: await dataToSendToAI(),
+                body: {
+                    modelConfig: (await dataToSendToAI()).modelConfig
+                },
+                headers: {
+                    'x-provider-key': (await dataToSendToAI()).apiKey as string
+                }
             });
         }
     }, [handleValidations, dataToSendToAI, reload, status]);
@@ -124,7 +137,10 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
         setMessages(filterdMessages);
 
         reload({
-            body: { ...(await dataToSendToAI()), messageId },
+            body: { modelConfig: (await dataToSendToAI()).modelConfig, editedMessageId: messageId },
+            headers: {
+                'x-provider-key': (await dataToSendToAI()).apiKey as string
+            }
         });
         router.refresh();
     }, [dataToSendToAI, messages, setMessages, reload, router]);
@@ -175,49 +191,30 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
 
             <div ref={messagesEndRef} />
 
-            {(status === 'streaming' || status === 'submitted') && (
-                <div className="flex flex-col items-center justify-center p-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        <span>{status === 'submitted' ? 'Thinking...' : 'Assistant is typing...'}</span>
-                    </div>
-                    <Button
-                        type="button"
-                        onClick={stop}
-                        size="sm"
-                        variant="outline"
-                        className="mt-3 rounded-full"
-                        disabled={status !== 'streaming'}
-                    >
-                        Stop Generating
-                    </Button>
-                </div>
-            )}
-
             {status === 'error' && (
-                <Alert variant="destructive" className="mt-3 sm:mt-4 rounded-lg">
+                <Alert variant="destructive" className="mt-3 sm:mt-4 rounded-lg text-gray-900 dark:text-gray-50">
                     <AlertTitle>Failed</AlertTitle>
-                    <AlertDescription className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                    <AlertDescription className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-gray-900 dark:text-gray-50">
                         {modelConfig ? (
                             <>
-                                <span>
+                                <span className="text-gray-900 dark:text-gray-50">
                                     {error?.message.startsWith('"') && error.message.endsWith('"') ?
                                         error.message.slice(1, -1) :
                                         error?.message}
                                 </span>
-                                <Button variant="outline" onClick={handleRetry} size="sm" className="rounded-full">
+                                <Button variant="outline" onClick={handleRetry} size="sm" className="rounded-full text-gray-900 dark:text-gray-50">
                                     <RefreshCcw className="w-4 h-4 mr-1" />
                                     Retry
                                 </Button>
                             </>
                         ) : (
                             <>
-                                <span>Please add an API Key</span>
+                                <span className="text-gray-900 dark:text-gray-50">Please add an API Key</span>
                                 <Button
                                     variant="outline"
                                     onClick={() => router.push('/settings')}
                                     size="sm"
-                                    className="rounded-full"
+                                    className="rounded-full text-gray-900 dark:text-gray-50"
                                 >
                                     <Settings className="w-4 h-4 mr-1" />
                                     Settings
@@ -228,7 +225,25 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
                 </Alert>
             )}
 
-            <div className="sticky bottom-0 left-0 right-0 w-full shadow-md">
+            <div className="sticky bottom-0 left-0 right-0 w-full shadow-md bg-background">
+                {(status === 'streaming' || status === 'submitted') && (
+                    <div className="flex flex-col items-center justify-center p-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            <span>{status === 'submitted' ? 'Thinking...' : 'Assistant is typing...'}</span>
+                        </div>
+                        <Button
+                            type="button"
+                            onClick={stop}
+                            size="sm"
+                            variant="outline"
+                            className="mt-3 rounded-full"
+                            disabled={status !== 'streaming'}
+                        >
+                            Stop Generating
+                        </Button>
+                    </div>
+                )}
                 <ChatInputBox
                     inputRef={chatInputBoxRef}
                     input={input}

@@ -78,7 +78,7 @@ export default function ChatInputBox({
     }, [input, maxHeight, inputRef]);
 
     return (
-        <div className="w-full flex flex-col gap-2 mt-5 p-2.5 bg-background">
+        <div className="w-full flex flex-col gap-2 p-2.5">
             <form onSubmit={onSubmit} className="flex items-center gap-2 w-full">
                 <Textarea
                     ref={inputRef}

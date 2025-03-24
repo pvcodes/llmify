@@ -1,37 +1,42 @@
-import { generateId, streamText } from "ai";
-import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { NextRequest, NextResponse } from "next/server";
 import db from "@/db";
+import { generateId, streamText } from "ai";
+import { authOptions } from "@/app/(auth)/auth";
 import {
 	ModelProvidersViaTier,
-	type ModelProviderType,
-	type Models,
+	ModelProviderType,
+	Models,
 } from "@/lib/ai/models";
-import { payloadSchema } from "./schema";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/(auth)/auth";
 import { MAX_FREE_TOKEN } from "@/lib/constant";
 import { model } from "@/lib/ai";
 import { generalPrompt } from "@/lib/ai/prompt";
+import { BillingLevel } from "@prisma/client";
+import { payloadSchema } from "./schema";
 
-export async function POST(req: Request) {
+export async function POST(
+	req: NextRequest,
+	{ params }: { params: Promise<{ id: string }> }
+) {
 	try {
 		// Step 1: Get the current user and parse the incoming request
 		const [sessionResult, payloadRaw] = await Promise.all([
 			getServerSession(authOptions),
 			req.json().catch(() => ({})),
 		]);
+		const rawApiKey = req.headers.get("x-provider-key");
+		const chatId = (await params).id;
+
 		const user = sessionResult?.user;
 
 		// Step 2: Validate the request data
-		const parseResult = payloadSchema.safeParse(payloadRaw);
+		const parseResult = payloadSchema.safeParse({
+			...payloadRaw,
+			apiKey: rawApiKey,
+		});
 		if (!parseResult.success) throw new Error("Data not valid");
-		const {
-			id: chatId,
-			modelConfig,
-			messages,
-			apiKey,
-			messageId,
-		} = parseResult.data;
+		const { modelConfig, messages, apiKey, editedMessageId } =
+			parseResult.data;
 
 		// Step 3: Find or create the user's billing record
 		let billing = await db.billing.findFirst({
@@ -71,15 +76,17 @@ export async function POST(req: Request) {
 		const modelToUse = model(
 			modelConfig.provider,
 			modelConfig.model.value as Models<ModelProviderType>, // validation check in schema, please check,
-			!apiKey, // Use our API key if user didn't provide one
+			isPremiumUser(billing.level, modelConfig.provider),
 			apiKey
 		);
 
+		const userMessageId = generateId();
+
 		// Step 6: Handle message editing or creation
-		if (messageId) {
+		if (editedMessageId) {
 			// If editing an existing message
 			const targetMessage = await db.message.update({
-				where: { id: messageId },
+				where: { id: editedMessageId },
 				data: { content: messages[messages.length - 1].content },
 				select: { createdAt: true },
 			});
@@ -98,7 +105,7 @@ export async function POST(req: Request) {
 			const userMessage = messages[messages.length - 1];
 			await db.message.create({
 				data: {
-					id: userMessage?.id ?? generateId(),
+					id: userMessageId,
 					content: userMessage.content,
 					chatId,
 					role: userMessage.role,
@@ -112,8 +119,6 @@ export async function POST(req: Request) {
 			messages,
 			system: generalPrompt,
 			onFinish: async (res) => {
-				// When the AI finishes responding:
-
 				// Update token usage if using our API
 				if (!apiKey) {
 					await db.billing.update({
@@ -134,8 +139,15 @@ export async function POST(req: Request) {
 					},
 				});
 			},
+			onError: (err) => {
+				console.log(err);
+			},
 		}).toDataStreamResponse();
 	} catch (error) {
 		return NextResponse.json((error as Error).message, { status: 400 });
 	}
 }
+
+const isPremiumUser = (tier: BillingLevel, provider: ModelProviderType) => {
+	return ModelProvidersViaTier[tier].includes(provider);
+};
