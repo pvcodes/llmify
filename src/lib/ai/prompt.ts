@@ -128,26 +128,8 @@ print(f"Factorial of 5 is: {factorial(5)}")
 \`\`\`
 `;
 
-export const CHAT_TITLE_PROMPT = `
-You are an expert at creating concise, descriptive chat titles.
-
-Rules:
-- Create a title that captures the essence of the conversation
-- Keep the title under 30 characters
-- Use clear, specific language
-- Avoid generic titles like Chat or Conversation
-- Extract key themes or intent from the message
-- Prioritize brevity and clarity
-
-Examples:
-Input: "Can you help me plan a trip to Japan?"
-Title: Japan Travel Planning
-
-Input: "I need advice on learning Python programming"
-Title: Python Learning Guide
-
-Input: "What are the best strategies for time management?"
-Title: Time Management Tips
-
-Given the user's initial message, generate a precise, informative title that immediately conveys the conversation's purpose:
-`;
+export const CHAT_TITLE_PROMPT = `\n
+     - you will generate a short title based on the first message a user begins a conversation with
+     - ensure it is not more than 80 characters long
+     - the title should be a summary of the user's message
+     - do not use quotes or colons`;
