@@ -49,11 +49,11 @@ export default function SignIn() {
                 <CardFooter className="flex flex-col">
                     <p className="mt-2 text-center text-sm text-gray-500">
                         By continuing, you agree to our{' '}
-                        <Link href="/terms-and-condtions" className="font-medium text-blue-600 hover:text-blue-500">
+                        <Link href="/terms" className="font-medium text-blue-600 hover:text-blue-500">
                             Terms of Service
                         </Link>{' '}
                         and{' '}
-                        <Link href="/terms-and-condtions#privacy-policy" className="font-medium text-blue-600 hover:text-blue-500">
+                        <Link href="/terms" className="font-medium text-blue-600 hover:text-blue-500">
                             Privacy Policy
                         </Link>
                     </p>
