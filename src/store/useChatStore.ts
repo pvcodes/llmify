@@ -1,12 +1,11 @@
 'use client';
 
+import { BillingLevel } from '@prisma/client';
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 
 import type { ModelProvider, Models } from '@/lib/ai/models';
-import { getModelsForProvider } from '@/lib/ai/models'; // Updated imports
-
-import type { BillingLevel } from '@prisma/client'; // Assuming this is still needed elsewhere
+import { getModelsForProvider } from '@/lib/ai/models';
 
 // Derive a persistent AES CryptoKey using PBKDF2
 const deriveCryptoKey = async (): Promise<CryptoKey> => {
@@ -86,7 +85,7 @@ const useChatStore = create<ChatState>()(
       (set, get) => ({
         config: {
           provider: 'Anthropic' as ModelProvider, // Type assertion for initial value
-          model: getModelsForProvider('FREE' as BillingLevel, 'Anthropic')[0], // Default to first Anthropic model in FREE tier
+          model: getModelsForProvider(BillingLevel.FREE, 'Anthropic')[0], // Default to first Anthropic model in FREE tier
         },
         apiKeys: {},
         cryptoKey: null,

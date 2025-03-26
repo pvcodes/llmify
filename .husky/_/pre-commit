@@ -5,6 +5,7 @@
 # Run linter before allowing git add
 run_linter() {
     echo "🔍 Running linter before commit..."
+    pnpm lint
     pnpm build
     
     # Capture the lint exit status

@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
         ) || false;
       if (!canUseModel) {
         throw new Error(
-          "Your tier doesn't support this model. Please add your API key or change models."
+          "Your plan doesn't support this model. Please add and enable your API key below, choose a different model, or upgrade your plan."
         );
       }
 

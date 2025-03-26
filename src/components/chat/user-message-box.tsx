@@ -56,7 +56,7 @@ export default function UserMessageBox({
   };
 
   return (
-    <div className='flex justify-end my-2'>
+    <div className='flex justify-end my-2 font-sans'>
       <div className='relative group'>
         {isEditing ? (
           <div className='relative'>

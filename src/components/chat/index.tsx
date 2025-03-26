@@ -1,8 +1,9 @@
 'use client';
 
 import { useChat } from '@ai-sdk/react';
-import { type Billing } from '@prisma/client';
+import { BillingLevel, type Billing } from '@prisma/client';
 import { RefreshCcw, Loader2, Settings } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -10,6 +11,7 @@ import { toast } from 'sonner';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useScrollToBottom } from '@/hooks/use-scroll-to-botton';
 import { MAX_FREE_TOKEN } from '@/lib/constant';
 import { cn, hasApiKeyForSelectedModel } from '@/lib/utils';
 import useChatStore from '@/store/useChatStore';
@@ -42,7 +44,7 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
   const router = useRouter();
 
   // Refs
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [messagesContainerRef, messagesEndRef] = useScrollToBottom<HTMLDivElement>();
   const chatInputBoxRef = useRef<HTMLTextAreaElement | null>(null);
 
   // Rate limiting
@@ -172,17 +174,6 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
     [dataToSendToAI, messages, setMessages, reload, router]
   );
 
-  // Scroll function
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, []);
-
-  // Scroll when streaming
-  useEffect(() => {
-    if (status === 'streaming' || status === 'submitted') scrollToBottom();
-    return chatInputBoxRef.current?.focus();
-  }, [status, scrollToBottom]);
-
   // Initialize new chat
   useEffect(() => {
     const fetchInitialResponse = async () => {
@@ -201,8 +192,8 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
   }, []);
 
   return (
-    <div className='flex flex-col relative min-h-screen max-w-4xl mx-auto'>
-      <div className='flex-1 overflow-y-auto'>
+    <div className='flex flex-col relative min-h-screen max-w-5xl mx-auto'>
+      <div className='flex-1 overflow-y-auto' ref={messagesContainerRef}>
         {messages.map((message, index) => (
           <div key={message.id} className='flex flex-col my-2 px-1 md:p-4'>
             {message.role === 'assistant' ? (
@@ -306,7 +297,7 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
               <span className='font-semibold text-primary'>
                 {(userBilling.tokenUsage / 1000).toFixed(1)}K
               </span>
-              {userBilling.level === 'FREE' && (
+              {userBilling.level === BillingLevel.FREE && (
                 <span className='font-semibold'> / {MAX_FREE_TOKEN / 1000}K</span>
               )}
             </span>
@@ -317,7 +308,6 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
       <div ref={messagesEndRef} />
 
       <div className='flex items-center justify-between p-2 rounded-lg border bg-card text-card-foreground shadow-sm transition-all'>
-        {userBilling.level}
         <div className='flex items-center gap-2'>
           <div
             className={cn(
@@ -334,7 +324,9 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
         </div>
 
         <div className='flex items-center gap-2'>
-          <span className='text-sm text-muted-foreground'>API Key</span>
+          <Link className='text-sm text-muted-foreground underline' href='/settings'>
+            API Key
+          </Link>
           <Switch
             checked={useSelectedProviderApiKey}
             onCheckedChange={setUseSelectedProviderApiKey}

@@ -53,7 +53,6 @@ export default function SelectAiModel({ setSheetOpen, tier }: SelectAiModelProps
       for (const provider of ModelProviders) {
         const key = await getApiKey(provider);
         if (key) {
-          // If an API key exists, use the fullest set of models (e.g., ENTERPRISE tier)
           updatedModels[provider] = allModels[provider];
         }
       }
@@ -123,36 +122,39 @@ export default function SelectAiModel({ setSheetOpen, tier }: SelectAiModelProps
                 </div>
               ) : (
                 <>
-                  {Object.entries(availableProvidersWithModels).map(([provider, models]) => (
-                    <CommandGroup key={provider}>
-                      <p className='px-2 py-1.5 text-xs font-medium text-muted-foreground capitalize sm:text-sm'>
-                        {provider}
-                      </p>
-                      {models.map((model) => (
-                        <CommandItem
-                          key={model.value}
-                          value={model.value}
-                          onSelect={() => {
-                            setConfig(provider as ModelProvider, {
-                              value: model.value,
-                              label: model.label,
-                            });
-                            setOpen(false);
-                            setSheetOpen(false);
-                          }}
-                          className='flex items-center gap-2 text-sm'
-                        >
-                          <Check
-                            className={cn(
-                              'h-4 w-4 flex-shrink-0',
-                              config?.model?.value === model.value ? 'opacity-100' : 'opacity-0'
-                            )}
-                          />
-                          <span className='truncate'>{model.label}</span>
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  ))}
+                  {Object.entries(availableProvidersWithModels).map(
+                    ([provider, models]) =>
+                      models.length > 0 && (
+                        <CommandGroup key={provider}>
+                          <p className='px-2 py-1.5 text-xs font-medium text-muted-foreground sm:text-sm'>
+                            {provider}
+                          </p>
+                          {models.map((model) => (
+                            <CommandItem
+                              key={model.value}
+                              value={model.value}
+                              onSelect={() => {
+                                setConfig(provider as ModelProvider, {
+                                  value: model.value,
+                                  label: model.label,
+                                });
+                                setOpen(false);
+                                setSheetOpen(false);
+                              }}
+                              className='flex items-center gap-2 text-sm'
+                            >
+                              <Check
+                                className={cn(
+                                  'h-4 w-4 flex-shrink-0',
+                                  config?.model?.value === model.value ? 'opacity-100' : 'opacity-0'
+                                )}
+                              />
+                              <span className='truncate'>{model.label}</span>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      )
+                  )}
                   <div className='p-2 border-t'>
                     <TooltipProvider>
                       <Tooltip>

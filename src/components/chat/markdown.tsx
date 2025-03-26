@@ -103,7 +103,7 @@ function enhanceCodeBlocks(container: HTMLDivElement): void {
 
     const copyButton = document.createElement('button');
     copyButton.className =
-      'copy-code-button text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition z-40';
+      'copy-code-button text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition';
     copyButton.innerHTML = 'Copy';
     copyButton.setAttribute('data-clipboard-content', codeContent);
     copyButton.setAttribute('data-code-id', codeBlockId);
