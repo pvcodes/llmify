@@ -68,7 +68,7 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
     } = useChat({
         id,
         initialMessages,
-        api: `/api/chat/${id}`,
+        api: '/api/chat/',
     });
 
     const dataToSendToAI = useCallback(async () => ({

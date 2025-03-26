@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/db";
-import { generateId, streamText } from "ai";
+import { generateId, generateText, streamText } from "ai";
 import { authOptions } from "@/app/(auth)/auth";
 import {
 	ModelProvidersViaTier,
@@ -10,14 +10,13 @@ import {
 } from "@/lib/ai/models";
 import { MAX_FREE_TOKEN } from "@/lib/constant";
 import { model } from "@/lib/ai";
-import { generalPrompt } from "@/lib/ai/prompt";
-import { BillingLevel } from "@prisma/client";
+import { chatSummarisePrompt, generalPrompt } from "@/lib/ai/prompt";
+import { BillingLevel, Message } from "@prisma/client";
+import { type Message as AiMessage } from "ai";
 import { payloadSchema } from "./schema";
+import { createAnthropic } from "@ai-sdk/anthropic";
 
-export async function POST(
-	req: NextRequest,
-	{ params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(req: NextRequest) {
 	try {
 		// Step 1: Get the current user and parse the incoming request
 		const [sessionResult, payloadRaw] = await Promise.all([
@@ -25,7 +24,6 @@ export async function POST(
 			req.json().catch(() => ({})),
 		]);
 		const rawApiKey = req.headers.get("x-provider-key");
-		const chatId = (await params).id;
 
 		const user = sessionResult?.user;
 
@@ -35,8 +33,13 @@ export async function POST(
 			apiKey: rawApiKey,
 		});
 		if (!parseResult.success) throw new Error("Data not valid");
-		const { modelConfig, messages, apiKey, editedMessageId } =
-			parseResult.data;
+		const {
+			id: chatId,
+			modelConfig,
+			messages,
+			apiKey,
+			editedMessageId,
+		} = parseResult.data;
 
 		// Step 3: Find or create the user's billing record
 		let billing = await db.billing.findFirst({
@@ -113,10 +116,18 @@ export async function POST(
 			});
 		}
 
+		// check if summarization required
+		const messagesToAI = await chatSummarise(
+			billing.id,
+			chatId,
+			messages,
+			!!apiKey
+		);
+
 		// Step 7: Stream the AI response
 		return streamText({
 			model: modelToUse,
-			messages,
+			messages: messagesToAI as AiMessage[],
 			system: generalPrompt,
 			onFinish: async (res) => {
 				// Update token usage if using our API
@@ -150,4 +161,94 @@ export async function POST(
 
 const isPremiumUser = (tier: BillingLevel, provider: ModelProviderType) => {
 	return ModelProvidersViaTier[tier].includes(provider);
+};
+
+const chatSummarise = async (
+	billingId: number,
+	chatId: string,
+	messages: Message[],
+	hasToUpdateBilling: boolean
+) => {
+	try {
+		console.log("aaya for summary");
+		const aiSummaryMessage = (content: string): AiMessage => ({
+			id: "pvcodes",
+			role: "assistant",
+			content: `This is the summary of existing chat:\n${content}\n\n`,
+			parts: [
+				{
+					type: "text",
+					text: `This is the summary of existing chat:\n${content}\n\n`,
+				},
+			],
+		});
+
+		// Scenario 1: Less than 10 messages
+		if (messages.length < 10) return messages;
+
+		// Scenario 2: Exactly 10 messages (initial summary)
+		if (messages.length === 10) {
+			const { summary, usage } = await summarize("", messages);
+			await db.chatSummary.create({ data: { chatId, summary } });
+			if (hasToUpdateBilling) {
+				await db.billing.update({
+					where: { id: billingId },
+					data: {
+						tokenUsage: { increment: usage.totalTokens },
+					},
+				});
+			}
+			return [aiSummaryMessage(summary), ...messages.slice(-10)];
+		}
+
+		// Retrieve existing summary if needed
+		const chatSummary = await db.chatSummary.findUnique({
+			where: { chatId },
+		});
+
+
+		// Ensure chatSummary exists before accessing .summary
+		const existingSummary = chatSummary?.summary || "";
+
+		// Scenario 3: Multiple of 10 messages
+		if (messages.length % 10 === 0) {
+			const { summary: newSummary, usage } = await summarize(
+				existingSummary,
+				messages
+			);
+			await db.chatSummary.upsert({
+				where: { chatId },
+				update: { summary: newSummary },
+				create: { chatId, summary: newSummary },
+			});
+			if (hasToUpdateBilling) {
+				await db.billing.update({
+					where: { id: billingId },
+					data: {
+						tokenUsage: { increment: usage.totalTokens },
+					},
+				});
+			}
+			return [aiSummaryMessage(newSummary), ...messages.slice(-10)];
+		}
+
+		// Scenario 4: Other message counts
+		return [aiSummaryMessage(existingSummary), ...messages.slice(-10)];
+	} catch (error) {
+		console.error("Error in chatSummarise:", error);
+		return messages; // Return messages array to prevent breaking the app
+	}
+};
+
+const summarize = async (existingSummary: string, messages: Message[]) => {
+	const anthropic = createAnthropic({
+		apiKey: process.env.API_KEY_ANTHROPIC,
+	});
+
+	const { text: summary, usage } = await generateText({
+		model: anthropic("claude-3-5-haiku-latest"),
+		prompt: chatSummarisePrompt(existingSummary, messages),
+	});
+
+	return { summary, usage };
 };

@@ -6,6 +6,7 @@ import {
 } from "@/lib/ai/models";
 
 export const payloadSchema = z.object({
+	id: z.string(),
 	messages: z.array(z.any()),
 	modelConfig: z
 		.object({

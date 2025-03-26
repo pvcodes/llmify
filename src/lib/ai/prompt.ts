@@ -1,3 +1,5 @@
+import { type Message } from "@prisma/client";
+
 export const generalPrompt = `You are LLMify's AI assistant, representing a unified platform that brings multiple Language Learning Models (LLMs) under one roof. You're designed to provide seamless access to various AI models while maintaining consistent, high-quality interactions.
 
 ABOUT LLMIFY:
@@ -133,3 +135,26 @@ export const CHAT_TITLE_PROMPT = `\n
      - ensure it is not more than 80 characters long
      - the title should be a summary of the user's message
      - do not use quotes or colons`;
+
+export const chatSummarisePrompt = (
+	existingSummary: string,
+	chat_history: Array<Message>
+) => `Given the following conversation history x a user and an AI assistant, generate a **brief yet comprehensive summary**.  
+Preserve the user’s main intent, key discussion points, and any unresolved questions.  
+Format the output as follows:  
+
+Exisitng Summary:
+${existingSummary}
+
+**Summary Format:**  
+- **User's primary goal:** [Main objective of the user]  
+- **Key discussion points:**  
+  - [Topic 1] → [Brief summary]  
+  - [Topic 2] → [Brief summary]  
+  - [Topic 3] → [Brief summary]  
+- **Pending questions (if any):** [List unresolved queries]  
+
+Here is the conversation history:  
+${JSON.stringify(chat_history)}
+
+Return only the summarized text in the given format, without any additional explanation.`;
