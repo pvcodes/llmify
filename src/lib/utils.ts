@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { v4 as uuid } from "uuid";
-import { type ModelProviderType } from "./ai/models";
+import { type ModelProvider } from "./ai/models";
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -13,8 +13,8 @@ export const generateChatId = () => {
 };
 
 export const hasApiKeyForSelectedModel = (
-	modelProvider: ModelProviderType,
-	apiKeys: Partial<Record<ModelProviderType, string>>
+	modelProvider: ModelProvider,
+	apiKeys: Partial<Record<ModelProvider, string>>
 ) => {
 	if (Object.keys(apiKeys).includes(modelProvider)) return true;
 	return false;

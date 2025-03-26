@@ -6,7 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Loader2, SendHorizonal } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ChatInputBoxProps {
     input: string;
@@ -33,14 +32,9 @@ export default function ChatInputBox({
     inputRef,
     isDisabled = false,
     placeholder = "Type a message...",
-    showShortcuts = true,
     maxHeight = 150,
-    tokenInfo,
     isLoading = false
 }: ChatInputBoxProps) {
-    const isMobile = useIsMobile();
-    const isMac = typeof navigator !== 'undefined' ? navigator.platform.includes('Mac') : false;
-
     // Handle keyboard shortcuts
     const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         // If Ctrl+Enter or Cmd+Enter is pressed, insert a new line
@@ -110,22 +104,6 @@ export default function ChatInputBox({
                     </Tooltip>
                 </TooltipProvider>
             </form>
-
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground w-full">
-                {showShortcuts && !isMobile && (
-                    <span className="hidden sm:inline">
-                        Press <kbd className="px-1 py-0.5 bg-muted rounded border">Enter</kbd> to send,{' '}
-                        <kbd className="px-1 py-0.5 bg-muted rounded border">{isMac ? 'Cmd' : 'Ctrl'}</kbd>+
-                        <kbd className="px-1 py-0.5 bg-muted rounded border">Enter</kbd> for new line
-                    </span>
-                )}
-
-                {tokenInfo && (
-                    <span className="px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm">
-                        Token usage: <span className="font-semibold text-primary">{tokenInfo.usage}</span> / <span className="font-semibold">{tokenInfo.limit}</span>
-                    </span>
-                )}
-            </div>
         </div>
     );
 }

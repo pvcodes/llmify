@@ -1,13 +1,11 @@
-import type { Models, ModelProviderType } from "./models";
+import type { ModelProvider, Models } from "./models";
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { createDeepSeek } from "@ai-sdk/deepseek";
+import { createOpenAI } from "@ai-sdk/openai";
+import { createXai } from "@ai-sdk/xai";
 
-/**
- * Validates an API key for the specified model provider.
- * @param provider The AI model provider
- * @param apiKey The API key to validate
- * @returns Promise resolving to whether the API key is valid
- */
 export async function validateProviderAPIKey(
-	provider: ModelProviderType,
+	provider: ModelProvider,
 	apiKey: string
 ): Promise<boolean> {
 	if (!apiKey || typeof apiKey !== "string") {
@@ -73,27 +71,12 @@ export async function validateProviderAPIKey(
 	}
 }
 
-import { createAnthropic } from "@ai-sdk/anthropic";
-import { createDeepSeek } from "@ai-sdk/deepseek";
-import { createOpenAI } from "@ai-sdk/openai";
-import { createXai } from "@ai-sdk/xai";
-
-function getApiKey(
-	provider: ModelProviderType,
-	isPremiumUser: boolean,
-	apiKey?: string
-) {
-	if (!isPremiumUser && !apiKey) {
-		throw new Error("Invalid access: No API key provided");
-	}
-	const envKeys = {
-		OpenAI: process.env.API_KEY_OPENAI,
-		Anthropic: process.env.API_KEY_ANTHROPIC,
-		DeepSeek: process.env.API_KEY_DEEPSEEK,
-		xAi: process.env.API_KEY_XAI,
-	};
-	return isPremiumUser ? envKeys[provider] : apiKey;
-}
+const PROVIDER_API_KEYS = {
+	OpenAI: process.env.API_KEY_OPENAI!,
+	Anthropic: process.env.API_KEY_ANTHROPIC!,
+	DeepSeek: process.env.API_KEY_DEEPSEEK!,
+	xAi: process.env.API_KEY_XAI!,
+};
 
 /** AI Model Provider Mapping */
 const modelProviders = {
@@ -104,12 +87,11 @@ const modelProviders = {
 } as const;
 
 export function model(
-	provider: ModelProviderType,
-	model: Models<ModelProviderType>,
-	isPremiumUser = true,
-	apiKey?: string
+	provider: ModelProvider,
+	model: Models<ModelProvider>,
+	apiKey: string | undefined
 ) {
-	const API_KEY = getApiKey(provider, isPremiumUser, apiKey);
+	const API_KEY = apiKey ? apiKey : PROVIDER_API_KEYS[provider];
 	const providerInstance = modelProviders[provider];
 
 	if (!providerInstance) {

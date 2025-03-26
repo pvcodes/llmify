@@ -1,4 +1,4 @@
-import { ModelProviderType } from "@/lib/ai/models";
+import { type ModelProvider } from "@/lib/ai/models";
 
 export interface APIKeyStatus {
 	[key: string]: "saved" | "copied" | "error" | null;
@@ -12,8 +12,8 @@ export interface APIKeyState {
 }
 
 export interface APIKeyActions {
-	handleSaveKey: (provider: ModelProviderType) => Promise<void>;
-	handleCopyKey: (provider: ModelProviderType) => Promise<void>;
-	toggleShowKey: (provider: ModelProviderType) => void;
-	handleKeyChange: (provider: ModelProviderType, value: string) => void;
+	handleSaveKey: (provider: ModelProvider) => Promise<void>;
+	handleCopyKey: (provider: ModelProvider) => Promise<void>;
+	toggleShowKey: (provider: ModelProvider) => void;
+	handleKeyChange: (provider: ModelProvider, value: string) => void;
 }

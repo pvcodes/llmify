@@ -1,11 +1,9 @@
 "use client";
-import {
-	AIModelProviders,
-	type ModelProviderType,
-	type Models,
-} from "@/lib/ai/models";
+
+import { ModelProvider, Models, getModelsForProvider } from "@/lib/ai/models"; // Updated imports
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
+import { BillingLevel } from "@prisma/client"; // Assuming this is still needed elsewhere
 
 // Derive a persistent AES CryptoKey using PBKDF2
 const deriveCryptoKey = async (): Promise<CryptoKey> => {
@@ -72,17 +70,17 @@ const decrypt = async (cipherText: string, key: CryptoKey): Promise<string> => {
 // Zustand Store Interface
 interface ChatState {
 	config: {
-		provider: ModelProviderType;
-		model: { label: string; value: Models<ModelProviderType> };
+		provider: ModelProvider;
+		model: { label: string; value: Models<ModelProvider> }; // Updated to use label and value
 	} | null;
-	apiKeys: Partial<Record<ModelProviderType, string>>; // Encrypted in storage
+	apiKeys: Partial<Record<ModelProvider, string>>; // Encrypted in storage
 	cryptoKey: CryptoKey | null;
 	setConfig: (
-		provider: ModelProviderType,
-		model: { label: string; value: Models<ModelProviderType> }
+		provider: ModelProvider,
+		model: { label: string; value: Models<ModelProvider> } // Updated to use label and value
 	) => void;
-	setApiKey: (provider: ModelProviderType, apiKey: string) => Promise<void>;
-	getApiKey: (provider: ModelProviderType) => Promise<string | undefined>;
+	setApiKey: (provider: ModelProvider, apiKey: string) => Promise<void>;
+	getApiKey: (provider: ModelProvider) => Promise<string | undefined>;
 	initializeCryptoKey: () => Promise<void>;
 }
 
@@ -92,8 +90,11 @@ const useChatStore = create<ChatState>()(
 		persist(
 			(set, get) => ({
 				config: {
-					provider: "Anthropic",
-					model: AIModelProviders.Anthropic[0],
+					provider: "Anthropic" as ModelProvider, // Type assertion for initial value
+					model: getModelsForProvider(
+						"FREE" as BillingLevel,
+						"Anthropic"
+					)[0], // Default to first Anthropic model in FREE tier
 				},
 				apiKeys: {},
 				cryptoKey: null,

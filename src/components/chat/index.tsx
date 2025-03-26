@@ -18,6 +18,7 @@ import UserMessageBox from "./user-message-box";
 import { cn, hasApiKeyForSelectedModel } from "@/lib/utils";
 import { Badge } from "../ui/badge";
 import { Switch } from "../ui/switch";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ChatProps {
     id: string;
@@ -27,6 +28,10 @@ interface ChatProps {
 }
 
 export default function Chat({ id, initialMessages, isNew = false, userBilling }: ChatProps) {
+
+    const isMobile = useIsMobile();
+    const isMac = typeof navigator !== 'undefined' ? navigator.platform.includes('Mac') : false;
+
     const modelConfig = useChatStore(state => state.config);
     const getApiKey = useChatStore(state => state.getApiKey);
     const apiKeys = useChatStore(state => state.apiKeys);
@@ -68,7 +73,6 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
     } = useChat({
         id,
         initialMessages,
-        api: '/api/chat/',
     });
 
     const dataToSendToAI = useCallback(async () => ({
@@ -192,8 +196,6 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
                 ))}
             </div>
 
-            <div ref={messagesEndRef} />
-
             {status === 'error' && (
                 <Alert variant="destructive" className="mt-3 sm:mt-4 rounded-lg text-gray-900 dark:text-gray-50">
                     <AlertTitle>Failed</AlertTitle>
@@ -260,10 +262,28 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
                             : undefined
                     }
                 />
+                <div className="mt-2 p-2 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground w-full">
+                    {!isMobile && (
+                        <span className="hidden sm:inline">
+                            Press <kbd className="px-1 py-0.5 bg-muted rounded border">Enter</kbd> to send,{' '}
+                            <kbd className="px-1 py-0.5 bg-muted rounded border">{isMac ? 'Cmd' : 'Ctrl'}</kbd>+
+                            <kbd className="px-1 py-0.5 bg-muted rounded border">Enter</kbd> for new line
+                        </span>
+                    )}
+
+                    {userBilling.tokenUsage && (
+                        <span className="px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm">
+                            Token usage: <span className="font-semibold text-primary">{(userBilling.tokenUsage / 1000).toFixed(1)}K</span>
+                            {userBilling.level === 'FREE' && <span className="font-semibold"> / {(MAX_FREE_TOKEN / 1000)}K</span>}
+                        </span>
+                    )}
+                </div>
             </div>
             <ScrollToBottom />
+            <div ref={messagesEndRef} />
 
-            <div className="flex items-center justify-between p-3 rounded-lg border bg-card text-card-foreground shadow-sm transition-all">
+            <div className="flex items-center justify-between p-2 rounded-lg border bg-card text-card-foreground shadow-sm transition-all">
+                {userBilling.level}
                 <div className="flex items-center gap-2">
                     <div className={cn(
                         "h-2 w-2 rounded-full transition-colors",

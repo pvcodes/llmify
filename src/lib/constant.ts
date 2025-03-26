@@ -5,6 +5,6 @@ const APP_DESCRIPTION =
 
 const GITHUB_REPO_URL = "https://github.com/pvcodes/LLMify";
 
-const MAX_FREE_TOKEN = 5000;
+const MAX_FREE_TOKEN = 100000;
 
 export { APP_NAME, APP_DESCRIPTION, GITHUB_REPO_URL, MAX_FREE_TOKEN };

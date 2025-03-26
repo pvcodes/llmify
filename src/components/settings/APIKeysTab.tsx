@@ -5,14 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Accordion } from "@/components/ui/accordion";
 import { Lock } from "lucide-react";
-import { AIModelProviders, type ModelProviderType, ProviderDescriptions as descriptions } from "@/lib/ai/models";
+import { ProviderDescriptions as descriptions, type ModelProvider, ModelProviders } from "@/lib/ai/models";
 import useChatStore from "@/store/useChatStore";
 import { APIKeyAccordion } from "./APIKeyAccordion";
 import { validateApiKey } from "./utils";
 import type { APIKeyState } from "./types";
 
 
-const llmProviders = Object.keys(AIModelProviders) as ModelProviderType[];
+const llmProviders = ModelProviders;
 
 export function APIKeysTab() {
     const { getApiKey, setApiKey, cryptoKey, initializeCryptoKey } = useChatStore();
@@ -45,7 +45,7 @@ export function APIKeysTab() {
         loadApiKeys();
     }, [cryptoKey, getApiKey]);
 
-    const handleSaveKey = async (provider: ModelProviderType) => {
+    const handleSaveKey = async (provider: ModelProvider) => {
         if (!cryptoKey) return;
         const key = state.tempKeys[provider] || state.displayKeys[provider];
         if (!key) return;
@@ -75,7 +75,7 @@ export function APIKeysTab() {
         }
     };
 
-    const handleCopyKey = async (provider: ModelProviderType) => {
+    const handleCopyKey = async (provider: ModelProvider) => {
         const key = state.tempKeys[provider] || state.displayKeys[provider];
         if (key) {
             await navigator.clipboard.writeText(key);
@@ -84,11 +84,11 @@ export function APIKeysTab() {
         }
     };
 
-    const toggleShowKey = (provider: ModelProviderType) => {
+    const toggleShowKey = (provider: ModelProvider) => {
         setState(prev => ({ ...prev, showKey: { ...prev.showKey, [provider]: !prev.showKey[provider] } }));
     };
 
-    const handleKeyChange = (provider: ModelProviderType, value: string) => {
+    const handleKeyChange = (provider: ModelProvider, value: string) => {
         setState(prev => ({ ...prev, tempKeys: { ...prev.tempKeys, [provider]: value } }));
     };
 

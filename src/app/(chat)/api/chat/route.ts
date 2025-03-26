@@ -1,17 +1,13 @@
 import { getServerSession } from "next-auth";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import db from "@/db";
 import { generateId, generateText, streamText } from "ai";
 import { authOptions } from "@/app/(auth)/auth";
-import {
-	ModelProvidersViaTier,
-	ModelProviderType,
-	Models,
-} from "@/lib/ai/models";
+import { ModelProvidersViaTier } from "@/lib/ai/models";
 import { MAX_FREE_TOKEN } from "@/lib/constant";
 import { model } from "@/lib/ai";
 import { chatSummarisePrompt, generalPrompt } from "@/lib/ai/prompt";
-import { BillingLevel, Message } from "@prisma/client";
+import { type Message } from "@prisma/client";
 import { type Message as AiMessage } from "ai";
 import { payloadSchema } from "./schema";
 import { createAnthropic } from "@ai-sdk/anthropic";
@@ -32,7 +28,9 @@ export async function POST(req: NextRequest) {
 			...payloadRaw,
 			apiKey: rawApiKey,
 		});
-		if (!parseResult.success) throw new Error("Data not valid");
+		if (!parseResult.success) {
+			throw new Error("Data not valid");
+		}
 		const {
 			id: chatId,
 			modelConfig,
@@ -55,9 +53,11 @@ export async function POST(req: NextRequest) {
 		// Step 4: Check if the user can use the requested model
 		if (!apiKey) {
 			// If no API key provided, check if user's tier allows this model
-			const canUseModel = ModelProvidersViaTier[billing.level].includes(
-				modelConfig.provider
-			);
+			const canUseModel =
+				ModelProvidersViaTier[billing.level][
+					modelConfig.provider
+				]?.some((model) => model.value === modelConfig.model.value) ||
+				false;
 			if (!canUseModel) {
 				throw new Error(
 					"Your tier doesn't support this model. Please add your API key or change models."
@@ -78,8 +78,7 @@ export async function POST(req: NextRequest) {
 		// Step 5: Set up the AI model
 		const modelToUse = model(
 			modelConfig.provider,
-			modelConfig.model.value as Models<ModelProviderType>, // validation check in schema, please check,
-			isPremiumUser(billing.level, modelConfig.provider),
+			modelConfig.model.value,
 			apiKey
 		);
 
@@ -151,17 +150,13 @@ export async function POST(req: NextRequest) {
 				});
 			},
 			onError: (err) => {
-				console.log(err);
+				console.error(err);
 			},
 		}).toDataStreamResponse();
 	} catch (error) {
 		return NextResponse.json((error as Error).message, { status: 400 });
 	}
 }
-
-const isPremiumUser = (tier: BillingLevel, provider: ModelProviderType) => {
-	return ModelProvidersViaTier[tier].includes(provider);
-};
 
 const chatSummarise = async (
 	billingId: number,
@@ -170,7 +165,6 @@ const chatSummarise = async (
 	hasToUpdateBilling: boolean
 ) => {
 	try {
-		console.log("aaya for summary");
 		const aiSummaryMessage = (content: string): AiMessage => ({
 			id: "pvcodes",
 			role: "assistant",
@@ -205,7 +199,6 @@ const chatSummarise = async (
 		const chatSummary = await db.chatSummary.findUnique({
 			where: { chatId },
 		});
-
 
 		// Ensure chatSummary exists before accessing .summary
 		const existingSummary = chatSummary?.summary || "";

@@ -1,15 +1,15 @@
 'use client';
 
-import { ModelProviderType } from "@/lib/ai/models";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { CheckCircle2, Clipboard, AlertCircle, Copy, Eye, EyeOff } from "lucide-react";
 import { APIKeyActions, APIKeyState } from "./types";
+import { type ModelProvider } from "@/lib/ai/models";
 
 interface APIKeyAccordionProps extends APIKeyState, APIKeyActions {
-    provider: ModelProviderType;
+    provider: ModelProvider;
     description: string;
     hasKey: boolean;
 }
