@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Pre-add hook script
+pre_add_lint() {
+    echo "🔍 Running linter before git add..."
+    
+    # Run linter
+    pnpm lint
+    
+    # Capture lint exit status
+    LINT_EXIT_CODE=$?
+    
+    # Prevent add if linting fails
+    if [ $LINT_EXIT_CODE -ne 0 ]; then
+        echo "❌ Linting failed. Please fix issues before adding files."
+        exit 1
+    fi
+}
+
+# Run linter
+pre_add_lint
