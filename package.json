@@ -57,6 +57,7 @@
 	},
 	"devDependencies": {
 		"@eslint/eslintrc": "^3.3.1",
+		"@next/eslint-plugin-next": "^15.2.4",
 		"@tailwindcss/postcss": "^4.0.17",
 		"@types/node": "^20.17.27",
 		"@types/react": "^19.0.12",
@@ -65,24 +66,17 @@
 		"@typescript-eslint/eslint-plugin": "^8.28.0",
 		"@typescript-eslint/parser": "^8.28.0",
 		"eslint": "^9.23.0",
-		"eslint-config-next": "15.2.1",
 		"eslint-config-prettier": "^10.1.1",
-		"eslint-import-resolver-typescript": "^3.9.1",
 		"eslint-plugin-import": "^2.31.0",
 		"eslint-plugin-jsx-a11y": "^6.10.2",
 		"eslint-plugin-prettier": "^5.2.5",
 		"eslint-plugin-react": "^7.37.4",
 		"eslint-plugin-react-hooks": "^5.2.0",
-		"eslint-plugin-security": "^3.0.1",
-		"eslint-plugin-tailwindcss": "^3.18.0",
-		"eslint-plugin-unicorn": "^58.0.0",
 		"husky": "^9.1.7",
-		"lint-staged": "^15.5.0",
 		"postcss": "^8.5.3",
 		"prettier": "^3.5.3",
 		"prisma": "^6.5.0",
 		"tailwindcss": "^4.0.17",
-		"typescript": "^5.8.2",
-		"typescript-eslint": "^8.28.0"
+		"typescript": "^5.8.2"
 	}
 }
