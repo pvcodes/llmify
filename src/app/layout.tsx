@@ -1,24 +1,25 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import Providers from "@/components/Providers";
-import { APP_DESCRIPTION, APP_NAME } from "@/lib/constant";
-import { Toaster } from "@/components/ui/sonner";
+import { Geist, Geist_Mono } from 'next/font/google';
 
+import './globals.css';
+import Providers from '@/components/Providers';
+import { Toaster } from '@/components/ui/sonner';
+import { APP_DESCRIPTION, APP_NAME } from '@/lib/constant';
+
+import type { Metadata } from 'next';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
   title: APP_NAME,
-  description: APP_DESCRIPTION
+  description: APP_DESCRIPTION,
 };
 
 export const viewport = {
@@ -31,23 +32,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en"
+    <html
+      lang='en'
       style={{
-        scrollBehavior: 'smooth'
+        scrollBehavior: 'smooth',
       }}
       suppressHydrationWarning
     >
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Providers
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-
-          <Toaster position="top-center" />
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <Providers attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
+          <Toaster position='top-center' />
           {children}
         </Providers>
       </body>

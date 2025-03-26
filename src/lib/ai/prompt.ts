@@ -1,4 +1,4 @@
-import { type Message } from "@prisma/client";
+import { type Message } from '@prisma/client';
 
 export const generalPrompt = `You are LLMify's AI assistant, representing a unified platform that brings multiple Language Learning Models (LLMs) under one roof. You're designed to provide seamless access to various AI models while maintaining consistent, high-quality interactions.
 
@@ -137,8 +137,8 @@ export const CHAT_TITLE_PROMPT = `\n
      - do not use quotes or colons`;
 
 export const chatSummarisePrompt = (
-	existingSummary: string,
-	chat_history: Array<Message>
+  existingSummary: string,
+  chat_history: Array<Message>
 ) => `Given the following conversation history x a user and an AI assistant, generate a **brief yet comprehensive summary**.  
 Preserve the user’s main intent, key discussion points, and any unresolved questions.  
 Format the output as follows:  

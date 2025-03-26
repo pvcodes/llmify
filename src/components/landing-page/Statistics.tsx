@@ -1,5 +1,5 @@
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
-import { Button } from "../ui/button";
+import { Button } from '../ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 
 export const Statistics = () => {
   interface statsProps {
@@ -9,16 +9,16 @@ export const Statistics = () => {
 
   const stats: statsProps[] = [
     {
-      quantity: "2.7K+*",
-      description: "Visits",
+      quantity: '2.7K+*',
+      description: 'Visits',
     },
     {
-      quantity: "1.8K+*",
-      description: "Subscribers",
+      quantity: '1.8K+*',
+      description: 'Subscribers',
     },
     {
-      quantity: "112*",
-      description: "Users",
+      quantity: '112*',
+      description: 'Users',
     },
     // {
     //   quantity: "4",
@@ -27,32 +27,30 @@ export const Statistics = () => {
   ];
 
   return (
-    <section id="statistics">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+    <section id='statistics'>
+      <div className='grid grid-cols-2 lg:grid-cols-4 gap-8'>
         {stats.map(({ quantity, description }: statsProps) => (
-          <div
-            key={description}
-            className="space-y-2 text-center"
-          >
-            <h2 className="text-3xl sm:text-4xl font-bold ">{quantity}</h2>
-            <p className="text-xl text-muted-foreground">{description}</p>
+          <div key={description} className='space-y-2 text-center'>
+            <h2 className='text-3xl sm:text-4xl font-bold '>{quantity}</h2>
+            <p className='text-xl text-muted-foreground'>{description}</p>
           </div>
         ))}
       </div>
-      <div className="flex justify-end">
-
+      <div className='flex justify-end'>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost">*</Button>
+              <Button variant='ghost'>*</Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-sm">At the moment<br /> stats are placeholders.</p>
+              <p className='text-sm'>
+                At the moment
+                <br /> stats are placeholders.
+              </p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>
-
     </section>
   );
 };

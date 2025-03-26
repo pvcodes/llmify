@@ -1,6 +1,8 @@
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Badge } from "../ui/badge";
-import { Button } from "@/components/ui/button";
+import { Check, Info } from 'lucide-react';
+import Link from 'next/link';
+import { signIn } from 'next-auth/react';
+
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -8,30 +10,29 @@ import {
   CardHeader,
   CardTitle,
   CardFooter,
-} from "@/components/ui/card";
-import { Check, Info } from "lucide-react";
-import { LightBulbIcon } from "./Icons";
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import Link from "next/link";
-import { signIn } from "next-auth/react";
+} from '@/components/ui/card';
+
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Badge } from '../ui/badge';
+
+import { LightBulbIcon } from './Icons';
+
 // import { GitHubLogoIcon } from "@radix-ui/react-icons";
 
 export const HeroCards = () => {
   return (
-    <div className="hidden lg:flex flex-row flex-wrap gap-8 relative w-[700px] h-[500px]">
+    <div className='hidden lg:flex flex-row flex-wrap gap-8 relative w-[700px] h-[500px]'>
       {/* Testimonial */}
-      <Card className="absolute w-[340px] -top-[15px] drop-shadow-xl shadow-black/10 dark:shadow-white/10">
-        <CardHeader className="flex flex-row items-center gap-4 pb-2">
+      <Card className='absolute w-[340px] -top-[15px] drop-shadow-xl shadow-black/10 dark:shadow-white/10'>
+        <CardHeader className='flex flex-row items-center gap-4 pb-2'>
           <Avatar>
-            <AvatarImage
-              alt=""
-              src="https://avatars.githubusercontent.com/u/90865757?v=4"
-            />
+            <AvatarImage alt='' src='https://avatars.githubusercontent.com/u/90865757?v=4' />
             <AvatarFallback>SH</AvatarFallback>
           </Avatar>
 
-          <div className="flex flex-col">
-            <CardTitle className="text-lg">Pranjal Verma</CardTitle>
+          <div className='flex flex-col'>
+            <CardTitle className='text-lg'>Pranjal Verma</CardTitle>
             <CardDescription>@pvcodes</CardDescription>
           </div>
         </CardHeader>
@@ -40,33 +41,23 @@ export const HeroCards = () => {
       </Card>
 
       {/* Team */}
-      <Card className="absolute right-[20px] top-4 w-80 flex flex-col justify-center items-center drop-shadow-xl shadow-black/10 dark:shadow-white/10">
-        <CardHeader className="mt-8 flex justify-center items-center pb-2">
+      <Card className='absolute right-[20px] top-4 w-80 flex flex-col justify-center items-center drop-shadow-xl shadow-black/10 dark:shadow-white/10'>
+        <CardHeader className='mt-8 flex justify-center items-center pb-2'>
           {/* <img
             src="https://i.pravatar.cc/150?img=58"
             alt="user avatar"
             className="absolute grayscale-[0%] -top-12 rounded-full w-24 h-24 aspect-square object-cover"
           /> */}
-          <Avatar
-            className="absolute grayscale-[0%] -top-12 rounded-full w-24 h-24 aspect-square object-cover"
-          >
-            <AvatarImage
-              alt=""
-              src="https://i.pravatar.cc/150?img=58"
-
-            />
+          <Avatar className='absolute grayscale-[0%] -top-12 rounded-full w-24 h-24 aspect-square object-cover'>
+            <AvatarImage alt='' src='https://i.pravatar.cc/150?img=58' />
             <AvatarFallback>SH</AvatarFallback>
           </Avatar>
-          <CardTitle className="text-center">Ben Dover</CardTitle>
-          <CardDescription className="font-normal text-primary">
-            Frontend Developer
-          </CardDescription>
+          <CardTitle className='text-center'>Ben Dover</CardTitle>
+          <CardDescription className='font-normal text-primary'>Frontend Developer</CardDescription>
         </CardHeader>
 
-        <CardContent className="text-center pb-2">
-          <p>
-            Enjoy transforming ideas into seamless AI conversations with LLMify. Try now!
-          </p>
+        <CardContent className='text-center pb-2'>
+          <p>Enjoy transforming ideas into seamless AI conversations with LLMify. Try now!</p>
         </CardContent>
 
         <CardFooter>
@@ -121,66 +112,64 @@ export const HeroCards = () => {
       </Card>
 
       {/* Pricing */}
-      <Card className="absolute top-[150px] left-[50px] w-72  drop-shadow-xl shadow-black/10 dark:shadow-white/10">
+      <Card className='absolute top-[150px] left-[50px] w-72  drop-shadow-xl shadow-black/10 dark:shadow-white/10'>
         <CardHeader>
-          <CardTitle className="flex item-center justify-between">
+          <CardTitle className='flex item-center justify-between'>
             Free
-            <Badge
-              variant="secondary"
-              className="text-sm text-primary"
-            >
+            <Badge variant='secondary' className='text-sm text-primary'>
               Most popular
             </Badge>
           </CardTitle>
           <div>
-            <span className="text-3xl font-bold">₹0</span>
-            <span className="text-muted-foreground"> /month</span>
+            <span className='text-3xl font-bold'>₹0</span>
+            <span className='text-muted-foreground'> /month</span>
           </div>
 
-          <CardDescription>
-            Always free with your API keys
-          </CardDescription>
+          <CardDescription>Always free with your API keys</CardDescription>
         </CardHeader>
 
         <CardContent>
-          <Button className="w-full" onClick={() => signIn()} >Start Free Trial</Button>
+          <Button className='w-full' onClick={() => signIn()}>
+            Start Free Trial
+          </Button>
         </CardContent>
 
-        <hr className="w-4/5 m-auto mb-4" />
+        <hr className='w-4/5 m-auto mb-4' />
 
-        <CardFooter className="flex flex-col">
-          <div className="space-y-4">
-            {["Unlimited Chats", "Change model at any time during chat", "Access to all streamline LLM models"].map(
-              (benefit: string) => (
-                <span
-                  key={benefit}
-                  className="flex"
-                >
-                  <Check className="text-green-500" />{" "}
-                  <h3 className="ml-2">{benefit}</h3>
-                </span>
-              )
-            )}
+        <CardFooter className='flex flex-col'>
+          <div className='space-y-4'>
+            {[
+              'Unlimited Chats',
+              'Change model at any time during chat',
+              'Access to all streamline LLM models',
+            ].map((benefit: string) => (
+              <span key={benefit} className='flex'>
+                <Check className='text-green-500' /> <h3 className='ml-2'>{benefit}</h3>
+              </span>
+            ))}
           </div>
-          <Alert className="mt-2">
-            <Info className="h-4 w-4" />
+          <Alert className='mt-2'>
+            <Info className='h-4 w-4' />
             <AlertTitle>No APIs?</AlertTitle>
             <AlertDescription>
-              Try out our universal API key to access all Models. <Link href='#pricing' className="text-blue-700 underline">Click here.</Link>
+              Try out our universal API key to access all Models.{' '}
+              <Link href='#pricing' className='text-blue-700 underline'>
+                Click here.
+              </Link>
             </AlertDescription>
           </Alert>
         </CardFooter>
       </Card>
 
       {/* Service */}
-      <Card className="absolute w-[350px] -right-[10px] bottom-[35px] drop-shadow-xl shadow-black/10 dark:shadow-white/10">
-        <CardHeader className="space-y-1 flex md:flex-row justify-start items-start gap-4">
-          <div className="mt-1 bg-primary/20 p-1 rounded-2xl">
+      <Card className='absolute w-[350px] -right-[10px] bottom-[35px] drop-shadow-xl shadow-black/10 dark:shadow-white/10'>
+        <CardHeader className='space-y-1 flex md:flex-row justify-start items-start gap-4'>
+          <div className='mt-1 bg-primary/20 p-1 rounded-2xl'>
             <LightBulbIcon />
           </div>
           <div>
             <CardTitle>Explore Diverse LLMs</CardTitle>
-            <CardDescription className="text-md mt-2">
+            <CardDescription className='text-md mt-2'>
               Effortlessly connect with a variety of language models to enhance your projects.
             </CardDescription>
           </div>

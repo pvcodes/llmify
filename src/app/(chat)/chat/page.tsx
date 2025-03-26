@@ -1,6 +1,5 @@
-'use client'
-import { redirect } from "next/navigation";
+'use client';
+import { redirect } from 'next/navigation';
 export default function Chat() {
-    return redirect('/new')
-
+  return redirect('/new');
 }
