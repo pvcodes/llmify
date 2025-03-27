@@ -28,7 +28,7 @@ export default async function ChatPage({ params }: { params: Promise<{ id: strin
       initialMessages={messages}
       id={id}
       isNew={isNew}
-      userBilling={{ ...userBilling, level: 'FREE' }}
+      userBilling={userBilling}
     />
   );
 }
