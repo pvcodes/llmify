@@ -80,6 +80,8 @@ export default function Chat({ id, initialMessages, isNew = false, userBilling }
   } = useChat({
     id,
     initialMessages,
+    experimental_throttle: 100,
+    sendExtraMessageFields: true,
   });
 
   const dataToSendToAI = useCallback(

@@ -1,3 +1,4 @@
+import { type UIMessage } from 'ai';
 import { z } from 'zod';
 
 import type { ModelProvider } from '@/lib/ai/models';
@@ -5,7 +6,6 @@ import { ModelProviders, getModelsForProvider } from '@/lib/ai/models';
 
 export const payloadSchema = z.object({
   id: z.string(),
-  messages: z.array(z.any()),
   modelConfig: z
     .object({
       provider: z.enum(ModelProviders as [ModelProvider, ...ModelProvider[]]), // Updated to use ModelProvider
@@ -32,4 +32,6 @@ export const payloadSchema = z.object({
   editedMessageId: z.string().optional(),
 });
 
-export type PayloadType = z.infer<typeof payloadSchema>;
+export type PayloadType = Omit<z.infer<typeof payloadSchema>, 'messages'> & {
+  messages: UIMessage[];
+};

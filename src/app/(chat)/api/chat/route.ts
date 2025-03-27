@@ -1,6 +1,5 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
-import { type Message } from '@prisma/client';
-import { generateId, generateText, streamText } from 'ai';
+import { generateText, streamText } from 'ai';
 import { type Message as AiMessage } from 'ai';
 import { type NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
@@ -14,6 +13,8 @@ import { MAX_FREE_TOKEN } from '@/lib/constant';
 
 import { payloadSchema } from './schema';
 
+import type { UIMessage } from 'ai';
+
 export async function POST(req: NextRequest) {
   try {
     // Step 1: Get the current user and parse the incoming request
@@ -22,6 +23,7 @@ export async function POST(req: NextRequest) {
       req.json().catch(() => ({})),
     ]);
     const rawApiKey = req.headers.get('x-provider-key');
+    const { messages }: { messages: UIMessage[]; [key: string]: unknown } = payloadRaw; // had to do ugly way zod validation would be tough to have UiMessage schema
 
     const user = sessionResult?.user;
 
@@ -33,7 +35,7 @@ export async function POST(req: NextRequest) {
     if (!parseResult.success) {
       throw new Error('Data not valid');
     }
-    const { id: chatId, modelConfig, messages, apiKey, editedMessageId } = parseResult.data;
+    const { id: chatId, modelConfig, apiKey, editedMessageId } = parseResult.data;
 
     // Step 3: Find or create the user's billing record
     let billing = await db.billing.findFirst({
@@ -55,7 +57,7 @@ export async function POST(req: NextRequest) {
         ) || false;
       if (!canUseModel) {
         throw new Error(
-          "Your plan doesn't support this model. Please add and enable your API key below, choose a different model, or upgrade your plan."
+          "Invalid model or your plan doesn't support this model. Please add and enable your API key below, choose a different model, or upgrade your plan."
         );
       }
 
@@ -67,8 +69,6 @@ export async function POST(req: NextRequest) {
 
     // Step 5: Set up the AI model
     const modelToUse = model(modelConfig.provider, modelConfig.model.value, apiKey);
-
-    const userMessageId = generateId();
 
     // Step 6: Handle message editing or creation
     if (editedMessageId) {
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
       const userMessage = messages[messages.length - 1];
       await db.message.create({
         data: {
-          id: userMessageId,
+          id: userMessage.id,
           content: userMessage.content,
           chatId,
           role: userMessage.role,
@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
 const chatSummarise = async (
   billingId: number,
   chatId: string,
-  messages: Message[],
+  messages: UIMessage[],
   hasToUpdateBilling: boolean
 ) => {
   try {
@@ -211,7 +211,7 @@ const chatSummarise = async (
   }
 };
 
-const summarize = async (existingSummary: string, messages: Message[]) => {
+const summarize = async (existingSummary: string, messages: UIMessage[]) => {
   const anthropic = createAnthropic({
     apiKey: process.env.API_KEY_ANTHROPIC,
   });
