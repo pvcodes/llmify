@@ -23,12 +23,5 @@ export default async function ChatPage({ params }: { params: Promise<{ id: strin
   }
   const isNew = messages.length === 1 && messages[0].role === 'user'; // new chat aai hai bhai, generate krwao
 
-  return (
-    <Chat
-      initialMessages={messages}
-      id={id}
-      isNew={isNew}
-      userBilling={userBilling}
-    />
-  );
+  return <Chat initialMessages={messages} id={id} isNew={isNew} userBilling={userBilling} />;
 }
