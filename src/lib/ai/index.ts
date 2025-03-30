@@ -89,6 +89,11 @@ export function model(
   if (!providerInstance) {
     throw new Error(`Invalid provider: ${provider}`);
   }
-
+  if (provider === 'OpenAI')
+    return providerInstance({ apiKey: API_KEY, compatibility: 'strict' })(model);
   return providerInstance({ apiKey: API_KEY })(model);
 }
+
+export type AiModeType = 'normal' | 'creative' | 'analytical';
+
+export const AiMode: AiModeType[] = ['normal', 'creative', 'analytical'];

@@ -1,33 +1,34 @@
+'use client';
+
 import copy from 'copy-to-clipboard';
+import { motion } from 'framer-motion';
 import hljs from 'highlight.js';
-import { BotIcon } from 'lucide-react';
+import { BotIcon, Copy, Check } from 'lucide-react';
 import { marked } from 'marked';
 import { markedHighlight } from 'marked-highlight';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import sanitizeHtml from 'sanitize-html';
 
 import 'highlight.js/styles/atom-one-dark.css';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-
-import CopyButton from '../copy-button';
 
 import styles from './markdown.module.css';
 
-// Configure Marked with syntax highlighting once
+import type { UIMessage } from 'ai';
+
+// Configure Marked with Highlight.js
 marked.use(
   markedHighlight({
     langPrefix: 'hljs language-',
-    highlight(code: string, lang: string) {
-      const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-      return hljs.highlight(code, { language }).value;
-    },
+    highlight: (code, lang) =>
+      hljs.getLanguage(lang) ? hljs.highlight(code, { language: lang }).value : code,
   })
 );
 
-// Sanitization config
-const sanitizeConfig = {
-  allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+// Sanitization Config
+const SANITIZE_CONFIG = {
+  allowedTags: [
     'h1',
     'h2',
     'h3',
@@ -44,182 +45,132 @@ const sanitizeConfig = {
     'strong',
     'em',
     'p',
-  ]),
+    'span',
+  ],
   allowedAttributes: {
-    ...sanitizeHtml.defaults.allowedAttributes,
     '*': ['class', 'id'],
+    a: ['href', 'target', 'rel'],
     code: ['class'],
     pre: ['class'],
-    a: ['href', 'target', 'rel'],
   },
 };
 
 interface MarkdownProps {
-  markdown: string;
+  message: UIMessage;
   className?: string;
 }
 
-interface CopyButtonElement extends HTMLElement {
-  getAttribute(name: string): string | null;
-  innerHTML: string;
-}
+// Enhance Code Blocks
+const enhanceCodeBlocks = (container: HTMLDivElement) => {
+  return Array.from(container.querySelectorAll('pre code')).map((block) => {
+    const pre = block.parentElement;
+    if (!pre) return '';
 
-// Helper function to enhance code blocks
-function enhanceCodeBlocks(container: HTMLDivElement): void {
-  const codeBlocks = container.querySelectorAll('pre code');
+    const code = block.textContent || '';
+    const lang = block.className.match(/language-(\w+)/)?.[1] || 'text';
 
-  codeBlocks.forEach((block, index) => {
-    const parentPre = block.parentElement;
-    if (!parentPre) return;
-
-    // Reset pre styling
-    parentPre.style.padding = '0';
-    parentPre.style.margin = '0';
-
-    // Get code content and language
-    const codeContent = block.textContent || '';
-    const classAttr = block.getAttribute('class');
-    const match = classAttr?.match(/language-(\w+)/);
-    const language = match ? match[1].toUpperCase() : 'TEXT';
-
-    // Create unique ID
-    const codeBlockId = `code-block-${index}`;
-    block.setAttribute('id', codeBlockId);
-
-    // Preserve syntax highlighting classes
-    if (classAttr) {
-      block.setAttribute('class', `${classAttr} hljs`);
-    }
-
-    // Create wrapper with language header and copy button
     const wrapper = document.createElement('div');
-    wrapper.className =
-      'relative mb-4 border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden text-sm';
+    wrapper.className = 'relative mb-4 border rounded-md bg-gray-900 text-sm shadow-sm';
 
     const header = document.createElement('div');
-    header.className =
-      'flex justify-between items-center bg-gray-100 dark:bg-gray-800 p-2 text-xs font-mono text-gray-600 dark:text-gray-300';
-    header.innerHTML = `<span>${language}</span>`;
+    header.className = 'flex justify-between items-center bg-gray-800 p-1 text-xs text-gray-300';
+    header.innerHTML = `<span class="pl-2">${lang.toUpperCase()}</span>`;
 
-    const copyButton = document.createElement('button');
-    copyButton.className =
-      'copy-code-button text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition';
-    copyButton.innerHTML = 'Copy';
-    copyButton.setAttribute('data-clipboard-content', codeContent);
-    copyButton.setAttribute('data-code-id', codeBlockId);
+    wrapper.append(header, pre.cloneNode(true));
+    pre.replaceWith(wrapper);
 
-    header.appendChild(copyButton);
-    wrapper.appendChild(header);
-    wrapper.appendChild(parentPre.cloneNode(true));
-
-    parentPre.replaceWith(wrapper);
+    return code;
   });
-}
-
-const Markdown: React.FC<MarkdownProps> = ({ markdown, className }) => {
-  const [htmlContent, setHtmlContent] = useState<string>('');
-  const isMobile = useIsMobile();
-  const markdownContainerRef = useRef<HTMLDivElement>(null);
-
-  // Process markdown once on component mount or when markdown changes
-  useEffect(() => {
-    if (!markdown) {
-      setHtmlContent('');
-      return;
-    }
-
-    const renderMarkdown = async (): Promise<void> => {
-      try {
-        // Parse markdown to HTML
-        const parsedContent = await marked(markdown, {
-          gfm: true,
-          breaks: true,
-        });
-
-        // Sanitize HTML
-        const sanitized = sanitizeHtml(parsedContent, sanitizeConfig);
-
-        // Process code blocks with language headers and copy buttons
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = sanitized;
-
-        // Enhance code blocks before setting HTML content
-        enhanceCodeBlocks(tempDiv);
-
-        // Apply syntax highlighting directly to the temp div
-        const codeBlocks = tempDiv.querySelectorAll('pre code');
-        codeBlocks.forEach((block) => hljs.highlightElement(block as HTMLElement));
-
-        // Set state once with fully processed content
-        setHtmlContent(tempDiv.innerHTML);
-      } catch (error) {
-        console.error('Error rendering markdown:', error);
-        setHtmlContent(`<p>Error rendering markdown content</p>`);
-      } finally {
-      }
-    };
-
-    renderMarkdown();
-  }, [markdown]);
-
-  // Handle copy button clicks
-  useEffect(() => {
-    const handleCopyClick = (e: Event): void => {
-      const target = e.target as CopyButtonElement;
-      if (target.classList.contains('copy-code-button')) {
-        const content = target.getAttribute('data-clipboard-content');
-        if (content) {
-          copy(content);
-          const originalText = target.innerHTML;
-          target.innerHTML = 'Copied!';
-          setTimeout(() => {
-            target.innerHTML = originalText;
-          }, 2000);
-        }
-      }
-    };
-
-    const container = markdownContainerRef.current;
-    if (container) {
-      container.addEventListener('click', handleCopyClick);
-      return () => container.removeEventListener('click', handleCopyClick);
-    }
-  }, [htmlContent]);
-
-  // Calculate minimum height based on content length to reduce layout shifts
-  const minHeight = markdown ? Math.min(100, markdown.length / 10) : 0;
-
-  return (
-    <div
-      className={cn(
-        'relative max-w-sm lg:max-w-2xl bg-gray-100 p-2.5 dark:bg-gray-800 rounded-lg group text-sm my-1',
-        className
-      )}
-    >
-      <BotIcon className='w-8 h-8 bg-gray-50 rounded p-1 text-black dark:text-white dark:bg-gray-800 mb-2' />
-      <div
-        className='w-full'
-        style={{
-          minHeight: `${minHeight}px`,
-          transition: 'min-height 0.2s ease-in-out',
-        }}
-      >
-        <div
-          ref={markdownContainerRef}
-          className={cn(styles.markdown, 'transition-opacity duration-200 opacity-100')}
-          dangerouslySetInnerHTML={{ __html: htmlContent }}
-        />
-      </div>
-      <div
-        className={cn(
-          'absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200',
-          isMobile && 'opacity-100'
-        )}
-      >
-        <CopyButton content={markdown} className='w-4 h-4 bg-none bg-accent-background' />
-      </div>
-    </div>
-  );
 };
 
-export default React.memo(Markdown);
+const Markdown = React.memo(({ message, className }: MarkdownProps) => {
+  const [html, setHtml] = useState('');
+  const [codeContents, setCodeContents] = useState<string[]>([]);
+  const [copied, setCopied] = useState({ full: false, code: false });
+  const [isHovering, setIsHovering] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Process and sanitize markdown content
+  const processMessage = useCallback(async () => {
+    if (!message?.parts?.length) return setHtml('');
+
+    const markdown = message.parts.map((part) => (part.type === 'text' ? part.text : '')).join('');
+    try {
+      const parsed = await marked(markdown, { gfm: true, breaks: true });
+      const sanitized = sanitizeHtml(parsed, SANITIZE_CONFIG);
+
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = sanitized;
+      setCodeContents(enhanceCodeBlocks(tempDiv));
+      setHtml(tempDiv.innerHTML);
+    } catch (error) {
+      console.error('Markdown render error:', error);
+      setHtml('<p>Oops, something went wrong!</p>');
+    }
+  }, [message]);
+
+  useEffect(() => {
+    processMessage();
+  }, [processMessage]);
+
+  // Copy Handlers
+  const handleCopy = useCallback(
+    (type: 'full' | 'code') => {
+      if (type === 'full') {
+        copy(message.parts.map((part) => (part.type === 'text' ? part.text : '')).join(''));
+      } else if (codeContents.length) {
+        copy(codeContents.join('\n\n'));
+      }
+      setCopied((prev) => ({ ...prev, [type]: true }));
+      setTimeout(() => setCopied((prev) => ({ ...prev, [type]: false })), 1500);
+    },
+    [message, codeContents]
+  );
+
+  return (
+    <div className='relative'>
+      <motion.div
+        className={cn(
+          'text-sm relative w-full max-w-2xl mb-2 bg-gray-100 dark:bg-gray-800 p-2 rounded-lg',
+          className
+        )}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
+      >
+        <div className='flex items-center mb-3'>
+          <BotIcon className='w-6 h-6 p-1 bg-gray-200 dark:bg-gray-700 rounded text-gray-800 dark:text-gray-200 shadow-sm' />
+        </div>
+
+        <div
+          ref={containerRef}
+          className={cn(
+            styles.markdown,
+            'prose dark:prose-invert max-w-none text-gray-800 dark:text-gray-200 m-0'
+          )}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+
+        {(isHovering || copied.full || copied.code) && (
+          <div className='absolute bottom-2 right-2 flex space-x-2'>
+            {codeContents.length > 0 && (
+              <Button variant='outline' size='sm' onClick={() => handleCopy('code')}>
+                {copied.code ? <Check className='h-3.5 w-3.5' /> : <Copy className='h-3.5 w-3.5' />}
+                <span>{copied.code ? 'Copied' : 'Copy code'}</span>
+              </Button>
+            )}
+            <Button variant='secondary' size='sm' onClick={() => handleCopy('full')}>
+              {copied.full ? <Check className='h-3.5 w-3.5' /> : <Copy className='h-3.5 w-3.5' />}
+              <span>{copied.full ? 'Copied' : 'Copy all'}</span>
+            </Button>
+          </div>
+        )}
+      </motion.div>
+    </div>
+  );
+});
+
+Markdown.displayName = 'Markdown';
+export default Markdown;

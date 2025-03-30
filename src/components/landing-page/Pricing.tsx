@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -67,69 +68,169 @@ const pricingList: PricingProps[] = [
 ];
 
 export const Pricing = () => {
+  // Animation variants
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+      },
+    },
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 50 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: 'spring',
+        bounce: 0.4,
+        duration: 0.8,
+      },
+    },
+  };
+
+  const popularItem = {
+    hidden: { opacity: 0, y: 50 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: 'spring',
+        bounce: 0.4,
+        duration: 0.8,
+      },
+    },
+    hover: {
+      y: -10,
+      transition: {
+        type: 'spring',
+        stiffness: 300,
+        damping: 10,
+      },
+    },
+  };
+
+  const listItem = {
+    hidden: { opacity: 0, x: -20 },
+    visible: (i: number) => ({
+      opacity: 1,
+      x: 0,
+      transition: {
+        delay: i * 0.1,
+      },
+    }),
+  };
+
   return (
     <section id='pricing' className='container py-24 sm:py-32'>
-      <h2 className='text-3xl md:text-4xl font-bold text-center'>
-        Get
-        <span className='bg-gradient-to-b from-primary/60 to-primary text-transparent bg-clip-text'>
-          {' '}
-          Unlimited{' '}
-        </span>
-        Access
-      </h2>
-      <h3 className='text-xl text-center text-muted-foreground pt-4 pb-8'>
-        Choose the plan that best fits your AI needs and unlock unlimited potential with LLMify.
-      </h3>
-      <div className='grid md:grid-cols-2 lg:grid-cols-3 gap-8'>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-100px' }}
+        transition={{ duration: 0.6 }}
+      >
+        <h2 className='text-3xl md:text-4xl font-bold text-center'>
+          Get
+          <span className='bg-gradient-to-b from-primary/60 to-primary text-transparent bg-clip-text'>
+            {' '}
+            Unlimited{' '}
+          </span>
+          Access
+        </h2>
+        <h3 className='text-xl text-center text-muted-foreground pt-4 pb-8'>
+          Choose the plan that best fits your AI needs and unlock unlimited potential with LLMify.
+        </h3>
+      </motion.div>
+
+      <motion.div
+        className='grid md:grid-cols-2 lg:grid-cols-3 gap-8'
+        variants={container}
+        initial='hidden'
+        whileInView='show'
+        viewport={{ once: true, margin: '-50px' }}
+      >
         {pricingList.map((pricing: PricingProps) => (
-          <Card
+          <motion.div
             key={pricing.title}
-            className={
-              pricing.popular === PopularPlanType.YES
-                ? 'drop-shadow-xl shadow-black/10 dark:shadow-white/10'
-                : ''
-            }
+            variants={pricing.popular === PopularPlanType.YES ? popularItem : item}
+            whileHover={pricing.popular === PopularPlanType.YES ? 'hover' : undefined}
           >
-            <CardHeader>
-              <CardTitle className='flex item-center justify-between'>
-                {pricing.title}
-                {pricing.popular === PopularPlanType.YES ? (
-                  <Badge variant='secondary' className='text-sm text-primary'>
-                    Most popular
-                  </Badge>
-                ) : null}
-              </CardTitle>
-              <div>
-                <span className='text-3xl font-bold'>₹{pricing.price}</span>
-                <span className='text-muted-foreground'> /month</span>
-              </div>
+            <Card
+              className={
+                pricing.popular === PopularPlanType.YES
+                  ? 'drop-shadow-xl shadow-black/10 dark:shadow-white/10 relative border-primary'
+                  : ''
+              }
+            >
+              {pricing.popular === PopularPlanType.YES && (
+                <motion.div
+                  className='absolute -top-3 -right-3 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full'
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', delay: 0.3 }}
+                >
+                  Popular
+                </motion.div>
+              )}
 
-              <CardDescription>
-                {pricing.description}
-                {pricing.title === 'Free' && <p>No API key? Still can use 5000 token for free</p>}
-              </CardDescription>
-            </CardHeader>
+              <CardHeader>
+                <CardTitle className='flex item-center justify-between'>
+                  {pricing.title}
+                  {pricing.popular === PopularPlanType.YES ? (
+                    <Badge variant='secondary' className='text-sm text-primary'>
+                      Most popular
+                    </Badge>
+                  ) : null}
+                </CardTitle>
+                <div>
+                  <span className='text-3xl font-bold'>₹{pricing.price}</span>
+                  <span className='text-muted-foreground'> /month</span>
+                </div>
 
-            <CardContent>
-              <Button className='w-full' disabled={pricing.title !== 'Free'}>
-                {pricing.buttonText}
-              </Button>
-            </CardContent>
+                <CardDescription>
+                  {pricing.description}
+                  {pricing.title === 'Free' && (
+                    <p>No API key? Still can use 5000 tokens for free</p>
+                  )}
+                </CardDescription>
+              </CardHeader>
 
-            <hr className='w-4/5 m-auto mb-4' />
+              <CardContent>
+                <Button className='w-full' disabled={pricing.title !== 'Free'}>
+                  {pricing.buttonText}
+                </Button>
+              </CardContent>
 
-            <CardFooter className='flex'>
-              <div className='space-y-4'>
-                {pricing.benefitList.map((benefit: string) => (
-                  <span key={benefit} className='flex'>
-                    <Check className='text-green-500' /> <h3 className='ml-2'>{benefit}</h3>
-                  </span>
-                ))}
-              </div>
-            </CardFooter>
-          </Card>
+              <hr className='w-4/5 m-auto mb-4' />
+
+              <CardFooter className='flex'>
+                <motion.div className='space-y-4' initial='hidden' animate='visible'>
+                  {pricing.benefitList.map((benefit: string, i: number) => (
+                    <motion.span key={benefit} className='flex' custom={i} variants={listItem}>
+                      <motion.div
+                        animate={{
+                          scale: [1, 1.2, 1],
+                          rotate: [0, 10, 0],
+                        }}
+                        transition={{
+                          duration: 0.5,
+                          delay: i * 0.2,
+                        }}
+                      >
+                        <Check className='text-green-500' />
+                      </motion.div>
+                      <h3 className='ml-2'>{benefit}</h3>
+                    </motion.span>
+                  ))}
+                </motion.div>
+              </CardFooter>
+            </Card>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </section>
   );
 };

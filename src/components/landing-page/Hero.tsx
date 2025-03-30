@@ -1,17 +1,36 @@
-// import { Github } from "lucide-react";
+import { motion } from 'framer-motion';
 import { signIn } from 'next-auth/react';
 
 import { Button } from '../ui/button';
 
-// import { buttonVariants } from "../ui/button";
 import { HeroCards } from './HeroCards';
-// import { GITHUB_REPO_URL } from "@/lib/constant";
 
 export const Hero = () => {
+  // Animation variants
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 },
+  };
+
   return (
-    <section className='container grid lg:grid-cols-2 place-items-center py-20 md:py-32 gap-10'>
+    <motion.section
+      className='container grid lg:grid-cols-2 place-items-center py-20 md:py-32 gap-10'
+      initial='hidden'
+      animate='show'
+      variants={container}
+    >
       <div className='text-center lg:text-start space-y-6'>
-        <main className='text-5xl md:text-6xl font-bold'>
+        <motion.main className='text-5xl md:text-6xl font-bold' variants={item}>
           <h1 className='inline'>
             <span className='inline bg-gradient-to-r from-[#F596D3]  to-[#D247BF] text-transparent bg-clip-text'>
               LLMs
@@ -24,38 +43,34 @@ export const Hero = () => {
             </span>{' '}
             together
           </h2>
-        </main>
+        </motion.main>
 
-        <p className='text-xl text-muted-foreground md:w-10/12 mx-auto lg:mx-0'>
+        <motion.p
+          className='text-xl text-muted-foreground md:w-10/12 mx-auto lg:mx-0'
+          variants={item}
+        >
           Access diverse LLMs effortlessly with all the tools you need for your project.
-        </p>
+        </motion.p>
 
-        <div className='space-y-4 md:space-y-0 md:space-x-4'>
+        <motion.div className='space-y-4 md:space-y-0 md:space-x-4' variants={item}>
           <Button className='w-full md:w-1/3' onClick={() => signIn()}>
             Get Started
           </Button>
-
-          {/* <a
-            rel="noreferrer noopener"
-            href={GITHUB_REPO_URL}
-            target="_blank"
-            className={`w-full md:w-1/3 ${buttonVariants({
-              variant: "outline",
-            })}`}
-          >
-            Github Repository
-            <Github className="ml-2 w-5 h-5" />
-          </a> */}
-        </div>
+        </motion.div>
       </div>
 
       {/* Hero cards sections */}
-      <div className='z-10'>
+      <motion.div
+        className='z-10'
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.2, type: 'spring' }}
+      >
         <HeroCards />
-      </div>
+      </motion.div>
 
       {/* Shadow effect */}
       <div className='shadow' />
-    </section>
+    </motion.section>
   );
 };

@@ -4,6 +4,7 @@ import { BillingLevel } from '@prisma/client';
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 
+import type { AiModeType } from '@/lib/ai';
 import type { ModelProvider, Models } from '@/lib/ai/models';
 import { getModelsForProvider } from '@/lib/ai/models';
 
@@ -61,18 +62,24 @@ const decrypt = async (cipherText: string, key: CryptoKey): Promise<string> => {
   }
 };
 
+interface ModelSetting {
+  mode: AiModeType;
+}
+
 // Zustand Store Interface
 interface ChatState {
   config: {
     provider: ModelProvider;
-    model: { label: string; value: Models<ModelProvider> }; // Updated to use label and value
-  } | null;
-  apiKeys: Partial<Record<ModelProvider, string>>; // Encrypted in storage
+    model: { label: string; value: Models<ModelProvider> };
+    setting: ModelSetting;
+  };
+  apiKeys: Partial<Record<ModelProvider, string>>;
   cryptoKey: CryptoKey | null;
-  setConfig: (
+  setModelConfig: (
     provider: ModelProvider,
-    model: { label: string; value: Models<ModelProvider> } // Updated to use label and value
+    model: { label: string; value: Models<ModelProvider> }
   ) => void;
+  setModelSetting: <K extends keyof ModelSetting>(key: K, value: ModelSetting[K]) => void;
   setApiKey: (provider: ModelProvider, apiKey: string) => Promise<void>;
   getApiKey: (provider: ModelProvider) => Promise<string | undefined>;
   initializeCryptoKey: () => Promise<void>;
@@ -86,11 +93,32 @@ const useChatStore = create<ChatState>()(
         config: {
           provider: 'Anthropic' as ModelProvider, // Type assertion for initial value
           model: getModelsForProvider(BillingLevel.FREE, 'Anthropic')[0], // Default to first Anthropic model in FREE tier
+          setting: {
+            mode: 'normal',
+          },
         },
         apiKeys: {},
         cryptoKey: null,
 
-        setConfig: (provider, model) => set({ config: { provider, model } }),
+        setModelConfig: (provider, model) =>
+          set((state) => ({
+            config: {
+              ...state.config,
+              provider,
+              model,
+            },
+          })),
+
+        setModelSetting: (key, value) =>
+          set((state) => ({
+            config: {
+              ...state.config,
+              setting: {
+                ...state.config.setting,
+                [key]: value,
+              },
+            },
+          })),
 
         setApiKey: async (provider, apiKey) => {
           const cryptoKey = get().cryptoKey;

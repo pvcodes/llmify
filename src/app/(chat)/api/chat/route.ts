@@ -1,6 +1,5 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
-import { generateText, streamText } from 'ai';
-import { type Message as AiMessage } from 'ai';
+import { generateText, streamText, type Message as AiMessage, type UIMessage } from 'ai';
 import { type NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 
@@ -12,8 +11,6 @@ import { chatSummarisePrompt, generalPrompt } from '@/lib/ai/prompt';
 import { MAX_FREE_TOKEN } from '@/lib/constant';
 
 import { payloadSchema } from './schema';
-
-import type { UIMessage } from 'ai';
 
 export async function POST(req: NextRequest) {
   try {

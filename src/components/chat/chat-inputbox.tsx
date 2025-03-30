@@ -1,116 +1,212 @@
 'use client';
 
-// Need Optimizations, and more
-import { Loader2, SendHorizonal } from 'lucide-react';
-import React, { useCallback, useEffect } from 'react';
+import { BillingLevel } from '@prisma/client';
+import { LucideSquareSquare, SendHorizonal, Settings2Icon, X } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useProviderApiKey } from '@/hooks/use-provider-api-key';
+import type { AiModeType } from '@/lib/ai';
+import { AiMode } from '@/lib/ai';
+import { MAX_FREE_TOKEN } from '@/lib/constant';
+import { cn } from '@/lib/utils';
+import useChatStore from '@/store/useChatStore';
+
+import { Badge } from '../ui/badge';
+import { Label } from '../ui/label';
+import { Toggle } from '../ui/toggle';
 
 interface ChatInputBoxProps {
   input: string;
-  onInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  onSubmit: (e: React.FormEvent) => void;
   setInput?: (value: string) => void;
-  isDisabled?: boolean;
-  isLoading?: boolean;
+  handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onSubmit: (e: React.FormEvent) => void;
+  stop: () => void;
+  status: 'submitted' | 'streaming' | 'ready' | 'error';
+  tokenInfo: { usage: number; tier: string };
   placeholder?: string;
-  showShortcuts?: boolean;
   maxHeight?: number;
-  tokenInfo?: {
-    usage: number;
-    limit: number;
-  };
-  inputRef: React.RefObject<HTMLTextAreaElement | null>;
 }
 
 export default function ChatInputBox({
   input,
-  onInputChange,
-  onSubmit,
   setInput,
-  inputRef,
-  isDisabled = false,
-  placeholder = 'Type a message...',
-  maxHeight = 150,
-  isLoading = false,
+  handleInputChange,
+  onSubmit,
+  stop,
+  status,
+  placeholder = 'Drop your thoughts here...',
+  maxHeight = 200,
+  tokenInfo,
 }: ChatInputBoxProps) {
-  // Handle keyboard shortcuts
+  const { hasSelectedProviderApiKey, setUseSelectedProviderApiKey, useSelectedProviderApiKey } =
+    useProviderApiKey();
+
+  const modelSetting = useChatStore((state) => state.config?.setting);
+  const setModelSetting = useChatStore((state) => state.setModelSetting);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [showTuneSetting, setShowTuneSetting] = useState(false);
+  const [charCount, setCharCount] = useState(0);
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      // If Ctrl+Enter or Cmd+Enter is pressed, insert a new line
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
-
         if (setInput) {
           const start = e.currentTarget.selectionStart;
           const end = e.currentTarget.selectionEnd;
-          const newValue = input.substring(0, start) + '\n' + input.substring(end);
-          setInput(newValue);
-
-          // Set cursor position after inserted newline
-          setTimeout(() => {
-            if (inputRef?.current) {
-              inputRef.current.selectionStart = start + 1;
-              inputRef.current.selectionEnd = start + 1;
-              inputRef.current.focus();
-            }
-          }, 0);
+          setInput(input.substring(0, start) + '\n' + input.substring(end));
+          setTimeout(() => inputRef.current?.focus(), 0);
         }
       } else if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
-        // Regular Enter without modifier keys submits the form
         e.preventDefault();
         onSubmit(e);
       }
     },
-    [input, setInput, onSubmit, inputRef]
+    [input, setInput, onSubmit]
   );
 
-  // Auto-resize textarea based on content
   useEffect(() => {
-    if (inputRef?.current) {
+    if (inputRef.current) {
       inputRef.current.style.height = 'auto';
       inputRef.current.style.height = `${Math.min(inputRef.current.scrollHeight, maxHeight)}px`;
+      setCharCount(input.length);
     }
-  }, [input, maxHeight, inputRef]);
+  }, [input, maxHeight]);
 
   return (
-    <div className='w-full flex flex-col gap-2 p-2.5'>
-      <form onSubmit={onSubmit} className='flex items-center gap-2 w-full'>
-        <Textarea
-          ref={inputRef}
-          className='flex-1 rounded-lg py-2 px-3 text-sm sm:text-base min-h-[40px] resize-none'
-          style={{ maxHeight: `${maxHeight}px` }}
-          value={input}
-          placeholder={placeholder}
-          onChange={onInputChange}
-          onKeyDown={handleKeyDown}
-          disabled={isDisabled}
-          aria-label='Message input'
-          rows={1}
-        />
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                type='submit'
-                size='icon'
-                className='rounded-full w-10 h-10 sm:w-12 sm:h-12'
-                disabled={!input.trim() || isDisabled || isLoading}
-                aria-label='Send message'
-              >
-                {isLoading ? (
-                  <Loader2 className='animate-spin' />
-                ) : (
-                  <SendHorizonal className='w-5 h-5' />
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Send message</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+    <div className='fixed bottom-0 p-2 mx-auto backdrop-blur-3xl max-w-4xl w-full flex flex-col gap-3 rounded-3xl mb-2'>
+      <form onSubmit={onSubmit} className='relative w-full flex items-end gap-3'>
+        <div className='relative flex-1'>
+          <Textarea
+            ref={inputRef}
+            className='w-full rounded-xl py-3 px-4 text-sm border-opacity-40 focus:ring-opacity-50 shadow-inner resize-none pr-20'
+            style={{ maxHeight: `${maxHeight}px` }}
+            value={input}
+            placeholder={placeholder}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            disabled={status === 'streaming'}
+            aria-label='AI Chat Input'
+            rows={2}
+          />
+          <div className='absolute right-2 bottom-2 flex items-center gap-2'>
+            <span className={cn('text-xs opacity-60', charCount > 2000 && 'text-red-700')}>
+              {charCount}/2000
+            </span>
+          </div>
+        </div>
+        {status === 'streaming' ? (
+          <Button
+            onClick={stop}
+            className='rounded-full w-12 h-12 shadow-md transition-all duration-200 ring-1 ring-opacity-40 hover:ring-opacity-60'
+          >
+            <LucideSquareSquare className='w-6 h-6' />
+          </Button>
+        ) : (
+          <Button
+            type='submit'
+            size='icon'
+            className='rounded-full w-12 h-12 shadow-md transition-all duration-200 ring-1 ring-opacity-40 hover:ring-opacity-60'
+            disabled={status === 'submitted'}
+          >
+            <SendHorizonal className='w-6 h-6' />
+          </Button>
+        )}
       </form>
+
+      <div className='flex flex-col-reverse md:flex-row md:justify-between w-full gap-2 md:gap-0'>
+        <div className='flex items-center gap-3 justify-between'>
+          <Badge variant='outline' className='border-opacity-40'>
+            Tokens: {(tokenInfo.usage / 1000).toFixed(1)}K{' '}
+            {tokenInfo.tier === BillingLevel.FREE && ` / ${MAX_FREE_TOKEN / 1000}K`}
+          </Badge>
+          <Badge variant='secondary' className='opacity-80'>
+            {modelSetting?.mode.charAt(0).toUpperCase() + modelSetting?.mode.slice(1)} Mode
+          </Badge>
+        </div>
+        <Button variant='secondary' size='sm' onClick={() => setShowTuneSetting((prev) => !prev)}>
+          {showTuneSetting ? (
+            <>
+              <X className='w-5 h-5 mr-1' /> Close
+            </>
+          ) : (
+            <>
+              <Settings2Icon className='w-5 h-5 mr-1' /> Tune
+            </>
+          )}
+        </Button>
+      </div>
+
+      {showTuneSetting && (
+        <>
+          <div className='mt-1 flex flex-col gap-2'>
+            <div className='flex justify-between items-center'>
+              <div className='flex gap-3'>
+                <Label className='flex items-center'>Response Style</Label>
+                <Select
+                  value={modelSetting?.mode}
+                  onValueChange={(val: AiModeType) => {
+                    setModelSetting('mode', val);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AiMode.map((mode) => (
+                      <SelectItem key={mode} value={mode}>
+                        {mode}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Toggle
+                        onPressedChange={setUseSelectedProviderApiKey}
+                        pressed={useSelectedProviderApiKey}
+                        disabled={!hasSelectedProviderApiKey}
+                        className={cn(
+                          'flex items-center gap-2 px-2 py-1 rounded-md',
+                          !hasSelectedProviderApiKey && 'opacity-50 cursor-not-allowed'
+                        )}
+                      >
+                        <span className='text-xs'>
+                          {useSelectedProviderApiKey ? 'Your API' : 'LLMify'}
+                        </span>
+                        <div
+                          className={cn(
+                            'w-2 h-2 rounded-full',
+                            useSelectedProviderApiKey ? 'bg-green-500 animate-pulse' : 'bg-blue-500'
+                          )}
+                        />
+                      </Toggle>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {useSelectedProviderApiKey
+                        ? 'Using your provided API Key'
+                        : 'Powered by LLMify'}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

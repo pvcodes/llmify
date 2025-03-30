@@ -1,9 +1,11 @@
 import { ArrowDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
+import { cn } from '@/lib/utils';
+
 import { Button } from './ui/button';
 
-const ScrollToBottom = () => {
+const ScrollToBottom = ({ className }: { className?: string }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -34,7 +36,7 @@ const ScrollToBottom = () => {
       {isVisible && (
         <Button
           onClick={scrollToBottom}
-          className='fixed bottom-25 right-4 z-50 opacity-90 shadow-md'
+          className={cn('fixed bottom-25 right-4 z-50 opacity-90 shadow-md', className)}
           size='icon'
           variant='secondary'
         >

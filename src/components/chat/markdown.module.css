@@ -1,9 +1,17 @@
 .markdown {
-	font-family: Cantarell "Segoe UI" system-ui, -apple-system,
-		BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, "Open Sans",
-		"Helvetica Neue", sans-serif;
+	font-family:
+		Cantarell 'Segoe UI' system-ui,
+		-apple-system,
+		BlinkMacSystemFont,
+		Roboto,
+		Oxygen,
+		Ubuntu,
+		'Open Sans',
+		'Helvetica Neue',
+		sans-serif;
 	line-height: 1.25;
 	position: relative;
+	overflow: hidden; /* Hide scrollbars */
 }
 
 .markdown h1 {
@@ -61,14 +69,14 @@
 }
 
 .markdown pre {
-	padding: 1rem;
+	padding: 0.1rem;
 	border-radius: 4px;
-	overflow-x: auto;
-	margin-bottom: 1.5rem;
+	/* overflow-x: auto; */
+	/* margin-bottom: 1.5rem; */
 }
 
 .markdown code {
-	font-family: "Courier New", monospace;
+	font-family: 'Courier New', monospace;
 	font-size: 0.875rem;
 	padding: 0.125rem 0.25rem;
 	border-radius: 2px;

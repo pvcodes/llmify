@@ -19,7 +19,7 @@ interface UserMessageBoxProps {
   messageIndex: number;
 }
 
-export default function UserMessageBox({
+export default function UserMessage({
   messageContent,
   handleEditMessageSubmit,
   messageId,

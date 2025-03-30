@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -48,40 +49,119 @@ const featureList: string[] = [
 ];
 
 export const Features = () => {
+  // Animation variants
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const badgeVariants = {
+    hidden: { scale: 0.8, opacity: 0 },
+    show: (i: number) => ({
+      scale: 1,
+      opacity: 1,
+      transition: {
+        delay: i * 0.05,
+        type: 'spring',
+        stiffness: 200,
+      },
+    }),
+    hover: { scale: 1.05 },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 50 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: 'spring',
+        bounce: 0.4,
+        duration: 0.8,
+      },
+    },
+    hover: { y: -5 },
+  };
+
   return (
     <section id='features' className='container py-24 sm:py-32 space-y-8'>
-      <h2 className='text-3xl lg:text-4xl font-bold md:text-center'>
+      <motion.h2
+        className='text-3xl lg:text-4xl font-bold md:text-center'
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-100px' }}
+        transition={{ duration: 0.6 }}
+      >
         Many{' '}
         <span className='bg-gradient-to-b from-primary/60 to-primary text-transparent bg-clip-text'>
           Great Features
         </span>
-      </h2>
+      </motion.h2>
 
-      <div className='flex flex-wrap md:justify-center gap-4'>
-        {featureList.map((feature: string) => (
-          <div key={feature}>
+      <motion.div
+        className='flex flex-wrap md:justify-center gap-4'
+        variants={container}
+        initial='hidden'
+        whileInView='show'
+        viewport={{ once: true, margin: '-50px' }}
+      >
+        {featureList.map((feature: string, i: number) => (
+          <motion.div key={feature} variants={badgeVariants} custom={i} whileHover='hover'>
             <Badge variant='secondary' className='text-sm'>
               {feature}
             </Badge>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      <div className='grid md:grid-cols-2 lg:grid-cols-3 gap-8'>
+      <motion.div
+        className='grid md:grid-cols-2 lg:grid-cols-3 gap-8'
+        variants={container}
+        initial='hidden'
+        whileInView='show'
+        viewport={{ once: true, margin: '-100px' }}
+      >
         {features.map(({ title, description, image }: FeatureProps) => (
-          <Card key={title}>
-            <CardHeader>
-              <CardTitle>{title}</CardTitle>
-            </CardHeader>
+          <motion.div key={title} variants={cardVariants} whileHover='hover'>
+            <Card className='h-full'>
+              <CardHeader>
+                <CardTitle>{title}</CardTitle>
+              </CardHeader>
 
-            <CardContent>{description}</CardContent>
+              <CardContent>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  {description}
+                </motion.p>
+              </CardContent>
 
-            <CardFooter>
-              <Image alt='About feature' src={image} className='w-[200px] lg:w-[300px] mx-auto' />
-            </CardFooter>
-          </Card>
+              <CardFooter>
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  whileInView={{ scale: 1, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.4, type: 'spring' }}
+                >
+                  <Image
+                    alt='About feature'
+                    src={image}
+                    className='w-[200px] lg:w-[300px] mx-auto'
+                    priority
+                  />
+                </motion.div>
+              </CardFooter>
+            </Card>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </section>
   );
 };

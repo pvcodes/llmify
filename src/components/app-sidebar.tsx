@@ -1,4 +1,4 @@
-import { MessageSquareDashed, PlusCircle } from 'lucide-react';
+import { MessageSquareDashed, PlusIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getServerSession } from 'next-auth';
@@ -26,7 +26,7 @@ export async function AppSidebar() {
   return (
     <Sidebar className='border-r'>
       {/* Sticky App Name with funky styling */}
-      <div className='sticky top-0 z-10  p-2 flex items-center justify-between bg-gray-100 dark:bg-gray-600'>
+      <div className='sticky top-0 z-10  p-2 flex items-center justify-between bg-gray-100 dark:bg-gray-600 h-18'>
         <div className='flex items-center gap-2'>
           <Image src={appImage} alt='App Logo' className='h-5 w-5 animate-pulse' />
           <span className='text-xl font-bold tracking-wider'>{APP_NAME}</span>
@@ -36,10 +36,10 @@ export async function AppSidebar() {
             href='/new'
             aria-label='New Chat'
             className={`${buttonVariants({
-              variant: 'secondary',
+              variant: 'outline',
             })}`}
           >
-            <PlusCircle className='h-4 w-4' />
+            <PlusIcon className='h-4 w-4' />
           </Link>
         </Button>
       </div>
@@ -47,7 +47,7 @@ export async function AppSidebar() {
       <SidebarContent className='pt-2'>
         <SidebarGroup>
           <SidebarGroupContent className='px-2'>
-            <div className='flex items-center justify-between px-2 py-3 border-b'>
+            <div className='flex items-center justify-between px-2 border-b'>
               <h2 className='text-sm font-medium text-muted-foreground uppercase tracking-wide'>
                 Chats
               </h2>

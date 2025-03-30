@@ -14,7 +14,7 @@ export const ModelProviders: ModelProvider[] = ['OpenAI', 'Anthropic', 'DeepSeek
 export const allModels: Record<ModelProvider, ModelOption[]> = {
   OpenAI: [
     { label: 'GPT-4o', value: 'gpt-4o' },
-    { label: 'GPT-4o Mini', value: 'gpt-40-mini' },
+    { label: 'GPT-4o Mini', value: 'gpt-4o-mini' },
     { label: 'O1', value: 'o1' },
     { label: 'O1 Mini', value: 'o1-mini' },
   ],
@@ -36,13 +36,13 @@ export const allModels: Record<ModelProvider, ModelOption[]> = {
 /** Maps billing tiers to available model providers and their model options. */
 export const ModelProvidersViaTier: Record<BillingLevel, Record<ModelProvider, ModelOption[]>> = {
   FREE: {
-    OpenAI: allModels.OpenAI.filter((m) => ['gpt-40-mini'].includes(m.value)),
+    OpenAI: allModels.OpenAI.filter((m) => ['gpt-4o-mini'].includes(m.value)),
     Anthropic: allModels.Anthropic.filter((m) => m.value === 'claude-3-5-haiku-latest'),
     DeepSeek: allModels.DeepSeek.filter((m) => m.value === 'deepseek-chat'),
     xAi: [],
   },
   PREMIUM: {
-    OpenAI: allModels.OpenAI.filter((m) => ['gpt-4o', 'gpt-40-mini', 'o1-mini'].includes(m.value)),
+    OpenAI: allModels.OpenAI.filter((m) => ['gpt-4o', 'gpt-4o-mini', 'o1-mini'].includes(m.value)),
     Anthropic: allModels.Anthropic.filter((m) => m.value !== 'claude-3-7-sonnet-20250219'),
     DeepSeek: allModels.DeepSeek,
     xAi: allModels.xAi,

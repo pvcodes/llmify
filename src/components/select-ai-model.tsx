@@ -36,7 +36,7 @@ export default function SelectAiModel({ setSheetOpen, tier }: SelectAiModelProps
     ModelProvidersViaTier[tier]
   );
 
-  const setConfig = useChatStore((state) => state.setConfig);
+  const setModelConfig = useChatStore((state) => state.setModelConfig);
   const config = useChatStore((state) => state.config);
   const apiKeys = useChatStore((state) => state.apiKeys);
   const getApiKey = useChatStore((state) => state.getApiKey);
@@ -134,7 +134,7 @@ export default function SelectAiModel({ setSheetOpen, tier }: SelectAiModelProps
                               key={model.value}
                               value={model.value}
                               onSelect={() => {
-                                setConfig(provider as ModelProvider, {
+                                setModelConfig(provider as ModelProvider, {
                                   value: model.value,
                                   label: model.label,
                                 });
