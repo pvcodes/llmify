@@ -53,7 +53,10 @@ export default function Navbar({ tier }: { tier: BillingLevel }) {
             </SheetTrigger>
             <SheetContent side='top' className='p-4'>
               <div className='flex justify-between'>
-                <ModeToggle />
+                <button onClick={() => setSheetOpen(false)}>
+                  {' '}
+                  <ModeToggle />{' '}
+                </button>
                 <User />
               </div>
               <div className='flex flex-col gap-2'>

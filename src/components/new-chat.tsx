@@ -2,9 +2,17 @@
 
 import { formatDistanceToNow } from 'date-fns';
 import { motion } from 'framer-motion';
-import { Sparkles, Zap, LayoutDashboard, Settings, MessageSquare, ArrowRight } from 'lucide-react';
+import {
+  Sparkles,
+  Zap,
+  LayoutDashboard,
+  Settings,
+  MessageSquare,
+  ArrowRight,
+  MessageCircleIcon,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { revalidateSidebar } from '@/app/(chat)/chat/action';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +20,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn, generateChatId } from '@/lib/utils';
+
+import { useSidebar } from './ui/sidebar';
 
 import type { Chat } from '@prisma/client';
 import type { Message } from 'ai';
@@ -107,120 +117,18 @@ const RecentChatCard = ({
   );
 };
 
-const HeroTextbox = ({
-  input,
-  setInput,
-  onSubmit,
-  status,
-}: {
-  input: string;
-  setInput: (value: string) => void;
-  onSubmit: (e: React.FormEvent) => void;
-  status: 'submitted' | 'streaming' | 'ready' | 'error';
-}) => {
+const HeroTextbox = () => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [randomPrompt] = useState(
     () => EXAMPLE_PROMPTS[Math.floor(Math.random() * EXAMPLE_PROMPTS.length)]
   );
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        onSubmit(e);
-      }
-    },
-    [onSubmit]
-  );
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className='flex flex-col items-center w-full max-w-3xl mx-auto'
-    >
-      <motion.div
-        className={cn(
-          'w-full relative transition-all duration-300',
-          isFocused ? 'scale-[1.02]' : 'scale-100'
-        )}
-      >
-        <motion.div
-          className='absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/10 to-purple-500/10 -z-10'
-          animate={{ opacity: isFocused ? 1 : 0.7 }}
-          transition={{ duration: 0.3 }}
-        />
-
-        <form onSubmit={onSubmit} className='relative'>
-          <Textarea
-            ref={inputRef}
-            className={cn(
-              'w-full rounded-2xl py-5 px-6 text-lg border-0 shadow-lg',
-              'bg-background/80 backdrop-blur-sm resize-none pr-16',
-              'focus-visible:ring-2 focus-visible:ring-primary/50',
-              'max-h-[200px]'
-            )}
-            value={input}
-            placeholder='Ask me anything...'
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            disabled={status === 'streaming'}
-            aria-label='AI Chat Input'
-            rows={3}
-          />
-
-          <motion.div
-            className='absolute right-3 bottom-3'
-            animate={{ scale: isFocused ? 1.1 : 1 }}
-          >
-            <Button
-              type='submit'
-              size='icon'
-              className='rounded-full w-10 h-10 shadow-md bg-primary/90 hover:bg-primary'
-              disabled={status === 'submitted' || !input.trim()}
-            >
-              {status === 'streaming' ? (
-                <div className='w-5 h-5 border-2 border-background rounded-full animate-spin' />
-              ) : (
-                <ArrowRight className='w-5 h-5' />
-              )}
-            </Button>
-          </motion.div>
-        </form>
-      </motion.div>
-
-      <motion.div
-        className='mt-4 text-sm text-muted-foreground flex items-center gap-1'
-        animate={{ opacity: isFocused ? 0.7 : 1, y: isFocused ? 5 : 0 }}
-      >
-        <span>Try asking about</span>
-        <motion.span
-          className='text-primary font-medium'
-          animate={{ x: [0, 2, -2, 0] }}
-          transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-        >
-          &quot;{randomPrompt}&quot;
-        </motion.span>
-        <ArrowRight className='w-4 h-4' />
-      </motion.div>
-    </motion.div>
-  );
-};
-
-// Main Component
-interface NewChatProps {
-  recentChats: Array<Chat & { messages: Message[] }>;
-}
-
-export default function NewChat({ recentChats }: NewChatProps) {
   const router = useRouter();
   const [prompt, setPrompt] = useState('');
-  const [status, setStatus] = useState<'ready' | 'submitted' | 'streaming' | 'error'>('ready');
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => inputRef.current?.focus(), []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -230,7 +138,7 @@ export default function NewChat({ recentChats }: NewChatProps) {
     }
 
     try {
-      setStatus('submitted');
+      setIsLoading(true);
       setError('');
 
       const chatId = generateChatId();
@@ -245,14 +153,141 @@ export default function NewChat({ recentChats }: NewChatProps) {
         throw new Error(data?.error?.message || 'Failed to create chat');
       }
 
-      setStatus('streaming');
       await revalidateSidebar();
       router.push(`/chat/${chatId}`);
     } catch (err) {
-      setStatus('error');
       setError(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        const start = e.currentTarget.selectionStart;
+        const end = e.currentTarget.selectionEnd;
+        setPrompt(prompt.substring(0, start) + '\n' + prompt.substring(end));
+        setTimeout(() => inputRef.current?.focus(), 0);
+      } else if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        // Use the current textarea value instead of state
+        const currentValue = e.currentTarget.value;
+        if (!currentValue.trim()) {
+          setError('Prompt cannot be empty');
+          return;
+        }
+        setPrompt(currentValue); // Sync the state
+        handleSubmit(e);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className='flex flex-col items-center w-full max-w-3xl mx-auto'
+      >
+        <motion.div
+          className={cn(
+            'w-full relative transition-all duration-300',
+            isFocused ? 'scale-[1.02]' : 'scale-100'
+          )}
+        >
+          <motion.div
+            className='absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/10 to-purple-500/10'
+            animate={{ opacity: isFocused ? 1 : 0.7 }}
+            transition={{ duration: 0.3 }}
+          />
+
+          <form onSubmit={handleSubmit} className='relative'>
+            <Textarea
+              ref={inputRef}
+              className={cn(
+                'w-full rounded-2xl py-5 px-6 text-lg border-0 shadow-lg',
+                'bg-background/80 backdrop-blur-sm resize-none pr-16',
+                'focus-visible:ring-2 focus-visible:ring-primary/50',
+                'max-h-[200px]'
+              )}
+              value={prompt}
+              placeholder='Ask me anything...'
+              onChange={(e) => setPrompt(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              onKeyDown={handleKeyDown}
+              disabled={isLoading}
+              aria-label='AI Chat Input'
+              rows={3}
+            />
+
+            <motion.div
+              className='absolute right-3 bottom-3'
+              animate={{ scale: isFocused ? 1.1 : 1 }}
+            >
+              <Button
+                type='submit'
+                size='icon'
+                className='rounded-full w-10 h-10 shadow-md bg-primary/90 hover:bg-primary'
+                disabled={isLoading || !prompt.trim()}
+              >
+                {isLoading ? (
+                  <div className='w-5 h-5 border-2 border-background rounded-full animate-spin' />
+                ) : (
+                  <ArrowRight className='w-5 h-5' />
+                )}
+              </Button>
+            </motion.div>
+          </form>
+        </motion.div>
+
+        <motion.div
+          className='mt-4 text-sm text-muted-foreground flex items-center gap-1'
+          animate={{ opacity: isFocused ? 0.7 : 1, y: isFocused ? 5 : 0 }}
+        >
+          <span>Try asking about</span>
+          <motion.span
+            className='text-primary font-medium'
+            animate={{ x: [0, 2, -2, 0] }}
+            transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+          >
+            &quot;{randomPrompt}&quot;
+          </motion.span>
+          <ArrowRight className='w-4 h-4' />
+        </motion.div>
+      </motion.div>
+
+      {error && (
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className='text-sm text-destructive mt-2'
+        >
+          {error}
+        </motion.p>
+      )}
+    </>
+  );
+};
+// Main Component
+interface NewChatProps {
+  recentChats: Array<Chat & { messages: Message[] }>;
+}
+
+export default function NewChat({ recentChats }: NewChatProps) {
+  const { setOpenMobile } = useSidebar();
+  const router = useRouter();
+
+  useEffect(
+    () => setOpenMobile(false),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
   return (
     <motion.div
@@ -294,17 +329,7 @@ export default function NewChat({ recentChats }: NewChatProps) {
           adapts to your needs.
         </motion.p>
 
-        <HeroTextbox input={prompt} setInput={setPrompt} onSubmit={handleSubmit} status={status} />
-
-        {error && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className='text-sm text-destructive mt-2'
-          >
-            {error}
-          </motion.p>
-        )}
+        <HeroTextbox />
       </div>
 
       <motion.div
@@ -330,7 +355,8 @@ export default function NewChat({ recentChats }: NewChatProps) {
       </motion.div>
 
       {/* Recent Chats Section */}
-      {recentChats.length > 0 && (
+
+      {recentChats.length < 0 ? (
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -343,6 +369,20 @@ export default function NewChat({ recentChats }: NewChatProps) {
             {recentChats.map((chat, index) => (
               <RecentChatCard key={chat.id} chat={chat} index={index} />
             ))}
+          </div>
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className='flex flex-col items-center justify-center text-center p-4 bg-secondary/50 rounded-lg my-6'>
+            <MessageCircleIcon className='h-16 w-16 text-muted-foreground mb-4' strokeWidth={1.5} />
+            <div className='space-y-2'>
+              <h2 className='text-xl font-semibold'>No Recent Chats</h2>
+              <p className='text-muted-foreground'>Start chatting by entering your first prompt</p>
+            </div>
           </div>
         </motion.div>
       )}

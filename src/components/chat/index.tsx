@@ -138,7 +138,7 @@ export default function Chat({ id, initialMessages, userBilling }: ChatProps) {
   );
 
   return (
-    <div className='max-w-4xl mx-auto text-sm px-4'>
+    <div className='max-w-4xl mx-auto text-sm'>
       <Messages
         messages={messages}
         handleEditMessageSubmit={handleEditMessageSubmit}

@@ -94,7 +94,7 @@ export default function UserMessage({
         )}
         <Button
           className={cn(
-            'absolute top-1 -left-7 opacity-0 group-hover:opacity-100 transition-opacity',
+            'absolute bottom-1 -left-7 opacity-0 group-hover:opacity-100 transition-opacity',
             isVisible && 'opacity-100'
           )}
           size='icon'
