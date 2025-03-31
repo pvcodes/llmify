@@ -103,6 +103,9 @@ export async function POST(req: NextRequest) {
 
     // Step 7: Stream the AI response
     return streamText({
+      headers: {
+        'Content-Type': 'text/event-stream',
+      },
       model: modelToUse,
       messages: messagesToAI as AiMessage[],
       system: generalPrompt,

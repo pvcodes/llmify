@@ -26,7 +26,7 @@ export async function AppSidebar() {
   return (
     <Sidebar className='border-r'>
       {/* Sticky App Name with funky styling */}
-      <div className='sticky top-0 z-10  p-2 flex items-center justify-between bg-gray-100 dark:bg-gray-600 h-18'>
+      <div className='sticky top-0 z-10  p-2 flex items-center justify-between bg-gray-100 dark:bg-gray-600 pt-3'>
         <div className='flex items-center gap-2'>
           <Image src={appImage} alt='App Logo' className='h-5 w-5 animate-pulse' />
           <span className='text-xl font-bold tracking-wider'>{APP_NAME}</span>

@@ -159,13 +159,13 @@ export default function ChatInputBox({
                     setModelSetting('mode', val);
                   }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger defaultValue={modelSetting?.mode}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {AiMode.map((mode) => (
                       <SelectItem key={mode} value={mode}>
-                        {mode}
+                        {mode.charAt(0).toUpperCase() + mode.slice(1)}
                       </SelectItem>
                     ))}
                   </SelectContent>

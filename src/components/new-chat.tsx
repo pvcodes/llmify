@@ -159,7 +159,8 @@ const HeroTextbox = ({
             className={cn(
               'w-full rounded-2xl py-5 px-6 text-lg border-0 shadow-lg',
               'bg-background/80 backdrop-blur-sm resize-none pr-16',
-              'focus-visible:ring-2 focus-visible:ring-primary/50'
+              'focus-visible:ring-2 focus-visible:ring-primary/50',
+              'max-h-[200px]'
             )}
             value={input}
             placeholder='Ask me anything...'

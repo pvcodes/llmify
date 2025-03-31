@@ -19,7 +19,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
       <div className='w-full'>
         <div className='flex'>
           <AppSidebar />
-          <div className='w-full md:p-4'>
+          <div className='w-full'>
             <Navbar tier={userBillingDetails?.level} />
             {children}
           </div>

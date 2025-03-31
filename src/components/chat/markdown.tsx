@@ -154,7 +154,7 @@ const Markdown = React.memo(({ message, className }: MarkdownProps) => {
         />
 
         {(isHovering || copied.full || copied.code) && (
-          <div className='absolute bottom-2 right-2 flex space-x-2'>
+          <div className='absolute -bottom-5 right-2 flex space-x-2'>
             {codeContents.length > 0 && (
               <Button variant='outline' size='sm' onClick={() => handleCopy('code')}>
                 {copied.code ? <Check className='h-3.5 w-3.5' /> : <Copy className='h-3.5 w-3.5' />}

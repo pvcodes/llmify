@@ -26,8 +26,8 @@ export default function Navbar({ tier }: { tier: BillingLevel }) {
   };
 
   return (
-    <nav className='sticky top-0 z-40 w-full border-b bg-background'>
-      <div className='flex items-center gap-2 justify-between px-2 lg:px-4 py-2'>
+    <nav className='sticky top-0 w-full border-b bg-background'>
+      <div className='flex items-center gap-2 justify-between px-4 py-2'>
         <div className='flex items-center gap-2'>
           <SidebarTrigger />
           <div className='hidden md:block'>
