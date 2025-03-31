@@ -355,8 +355,7 @@ export default function NewChat({ recentChats }: NewChatProps) {
       </motion.div>
 
       {/* Recent Chats Section */}
-
-      {recentChats.length < 0 ? (
+      {recentChats.length > 0 ? (
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}

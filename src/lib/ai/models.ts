@@ -13,10 +13,11 @@ export const ModelProviders: ModelProvider[] = ['OpenAI', 'Anthropic', 'DeepSeek
 
 export const allModels: Record<ModelProvider, ModelOption[]> = {
   OpenAI: [
-    { label: 'GPT-4o', value: 'gpt-4o' },
-    { label: 'GPT-4o Mini', value: 'gpt-4o-mini' },
     { label: 'O1', value: 'o1' },
     { label: 'O1 Mini', value: 'o1-mini' },
+    { label: 'GPT 4', value: 'gpt-4' },
+    { label: 'GPT-4o', value: 'gpt-4o' },
+    { label: 'GPT-4o Mini', value: 'gpt-4o-mini' },
   ],
   Anthropic: [
     { label: 'Claude 3.5 Haiku', value: 'claude-3-5-haiku-latest' },

@@ -52,6 +52,7 @@ export default function ChatInputBox({
     useProviderApiKey();
 
   const modelSetting = useChatStore((state) => state.config?.setting);
+  const modelConfig = useChatStore((state) => state.config?.model);
   const setModelSetting = useChatStore((state) => state.setModelSetting);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [showTuneSetting, setShowTuneSetting] = useState(false);
@@ -133,6 +134,9 @@ export default function ChatInputBox({
           <Badge variant='secondary' className='opacity-80'>
             {modelSetting?.mode.charAt(0).toUpperCase() + modelSetting?.mode.slice(1)} Mode
           </Badge>
+          <Badge variant='secondary' className='opacity-80'>
+            {modelConfig.label}
+          </Badge>
         </div>
         <Button variant='secondary' size='sm' onClick={() => setShowTuneSetting((prev) => !prev)}>
           {showTuneSetting ? (
@@ -154,7 +158,7 @@ export default function ChatInputBox({
               <div className='flex gap-3'>
                 <Label className='flex items-center'>Response Style</Label>
                 <Select
-                  value={modelSetting?.mode}
+                  value={modelSetting?.mode ?? 'normal'}
                   onValueChange={(val: AiModeType) => {
                     setModelSetting('mode', val);
                   }}

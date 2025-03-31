@@ -2,7 +2,7 @@
 
 import { Check, ChevronsUpDown, KeyRound, Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import * as React from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -23,54 +23,50 @@ import useChatStore from '@/store/useChatStore';
 import type { BillingLevel } from '@prisma/client';
 
 interface SelectAiModelProps {
-  setSheetOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setSheetOpen: (open: boolean) => void;
   tier: BillingLevel;
 }
 
-export default function SelectAiModel({ setSheetOpen, tier }: SelectAiModelProps) {
+const ModelSelector = ({ setSheetOpen, tier }: SelectAiModelProps) => {
   const router = useRouter();
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
+  const [availableProviders, setAvailableProviders] = useState(ModelProvidersViaTier[tier]);
 
-  // Store providers and their available models based on tier and API keys
-  const [availableProvidersWithModels, setAvailableProvidersWithModels] = React.useState(
-    ModelProvidersViaTier[tier]
-  );
+  const { setModelConfig, config, apiKeys, getApiKey, cryptoKey } = useChatStore();
 
-  const setModelConfig = useChatStore((state) => state.setModelConfig);
-  const config = useChatStore((state) => state.config);
-  const apiKeys = useChatStore((state) => state.apiKeys);
-  const getApiKey = useChatStore((state) => state.getApiKey);
-  const cryptoKey = useChatStore((state) => state.cryptoKey);
-
-  React.useEffect(() => {
-    const checkApiKeys = async () => {
-      if (!cryptoKey) return;
-
-      // Start with tier-based models
-      const updatedModels = ModelProvidersViaTier[tier];
-
-      // Check each provider for an API key and unlock higher-tier models if present
-      for (const provider of ModelProviders) {
-        const key = await getApiKey(provider);
-        if (key) {
-          updatedModels[provider] = allModels[provider];
-        }
-      }
-
-      setAvailableProvidersWithModels(updatedModels);
-    };
-    checkApiKeys();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiKeys, tier, cryptoKey]);
-
-  const handleSetupApiKeys = () => {
+  const handleSetupApiKeys = useCallback(() => {
     setOpen(false);
     setSheetOpen(false);
     router.push('/settings');
-  };
+  }, [router, setSheetOpen]);
 
-  // Check if there are no available providers (i.e., no models at all)
-  const hasNoApiKeys = Object.keys(availableProvidersWithModels).length === 0;
+  const handleModelSelect = useCallback(
+    (provider: ModelProvider, model: { value: string; label: string }) => {
+      setModelConfig(provider, model);
+      setOpen(false);
+      setSheetOpen(false);
+    },
+    [setModelConfig, setSheetOpen]
+  );
+
+  useEffect(() => {
+    const updateModels = async () => {
+      if (!cryptoKey) return;
+
+      const updated = { ...ModelProvidersViaTier[tier] };
+      await Promise.all(
+        ModelProviders.map(async (provider) => {
+          const key = await getApiKey(provider);
+          if (key) updated[provider] = allModels[provider];
+        })
+      );
+      setAvailableProviders(updated);
+    };
+
+    updateModels();
+  }, [apiKeys, tier, cryptoKey, getApiKey]);
+
+  const hasNoApiKeys = Object.keys(availableProviders).length === 0;
 
   return (
     <div className='w-full max-w-md'>
@@ -80,98 +76,83 @@ export default function SelectAiModel({ setSheetOpen, tier }: SelectAiModelProps
             variant='outline'
             role='combobox'
             aria-expanded={open}
-            className={cn(
-              'w-full justify-between px-3 py-2 text-sm sm:text-base h-10',
-              hasNoApiKeys && 'text-amber-500 border-amber-200'
-            )}
+            className={cn('w-full justify-between', hasNoApiKeys && 'border-warning')}
           >
             {hasNoApiKeys ? (
-              <span className='flex items-center'>
-                <Lock className='mr-2 h-4 w-4' />
+              <span className='flex items-center gap-2'>
+                <Lock className='h-4 w-4' />
                 Set up API key
               </span>
             ) : (
               <span className='truncate'>{config?.model?.label || 'Select Model'}</span>
             )}
-            <ChevronsUpDown className='ml-2 h-4 w-4 flex-shrink-0 opacity-50' />
+            <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
           </Button>
         </PopoverTrigger>
+
         <PopoverContent
-          className='w-[var(--radix-popover-trigger-width)] p-0 lg:w-[300px] lg:mr-16'
+          className='w-[var(--radix-popover-trigger-width)] lg:w-[300px] p-0'
           align='start'
         >
-          <Command>
-            <CommandInput placeholder='Search model...' className='h-9' />
+          <Command className='min-w-fit'>
+            <CommandInput placeholder='Search model...' />
             <CommandList className='max-h-[300px]'>
-              <CommandEmpty>No models found.</CommandEmpty>
+              <CommandEmpty>No models found</CommandEmpty>
+
               {hasNoApiKeys ? (
-                <div className='py-6 text-center'>
-                  <KeyRound className='mx-auto h-12 w-12 text-amber-500/40 mb-2' />
-                  <p className='text-sm font-medium'>API key required</p>
-                  <p className='text-xs text-muted-foreground mt-1 mb-4 px-4'>
-                    You need to set up at least one API key to use the available models
-                  </p>
-                  <Button
-                    onClick={handleSetupApiKeys}
-                    size='sm'
-                    variant='secondary'
-                    className='mx-auto'
-                  >
+                <div className='grid place-items-center p-6 gap-3 text-center'>
+                  <KeyRound className='h-12 w-12 opacity-40' />
+                  <div>
+                    <p className='font-medium'>API key required</p>
+                    <p className='text-sm opacity-70 mt-1'>
+                      Set up at least one API key to use models
+                    </p>
+                  </div>
+                  <Button onClick={handleSetupApiKeys} size='sm' variant='secondary'>
                     Set up API Keys
                   </Button>
                 </div>
               ) : (
                 <>
-                  {Object.entries(availableProvidersWithModels).map(
-                    ([provider, models]) =>
-                      models.length > 0 && (
-                        <CommandGroup key={provider}>
-                          <p className='px-2 py-1.5 text-xs font-medium text-muted-foreground sm:text-sm'>
-                            {provider}
-                          </p>
-                          {models.map((model) => (
-                            <CommandItem
-                              key={model.value}
-                              value={model.value}
-                              onSelect={() => {
-                                setModelConfig(provider as ModelProvider, {
-                                  value: model.value,
-                                  label: model.label,
-                                });
-                                setOpen(false);
-                                setSheetOpen(false);
-                              }}
-                              className='flex items-center gap-2 text-sm'
-                            >
-                              <Check
-                                className={cn(
-                                  'h-4 w-4 flex-shrink-0',
-                                  config?.model?.value === model.value ? 'opacity-100' : 'opacity-0'
-                                )}
-                              />
-                              <span className='truncate'>{model.label}</span>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      )
-                  )}
-                  <div className='p-2 border-t'>
+                  {Object.entries(availableProviders)
+                    .filter(([, models]) => models.length > 0)
+                    .map(([provider, models]) => (
+                      <CommandGroup key={provider}>
+                        <p className='text-xs font-medium opacity-70 px-2 py-1.5'>{provider}</p>
+                        {models.map((model) => (
+                          <CommandItem
+                            key={model.value}
+                            value={model.value}
+                            onSelect={() => handleModelSelect(provider as ModelProvider, model)}
+                            className='gap-2'
+                          >
+                            <Check
+                              className={cn(
+                                'h-4 w-4 shrink-0',
+                                config?.model?.value === model.value ? 'opacity-100' : 'opacity-0'
+                              )}
+                            />
+                            <span className='truncate'>{model.label}</span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    ))}
+
+                  <div className='border-t p-2'>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
                             variant='ghost'
                             size='sm'
-                            className='w-full text-xs text-muted-foreground'
+                            className='w-full text-sm opacity-70'
                             onClick={handleSetupApiKeys}
                           >
-                            <KeyRound className='h-3 w-3 mr-1' />
+                            <KeyRound className='h-3 w-3 mr-2' />
                             Manage API Keys
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Configure additional models</p>
-                        </TooltipContent>
+                        <TooltipContent>Configure additional models</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </div>
@@ -183,4 +164,6 @@ export default function SelectAiModel({ setSheetOpen, tier }: SelectAiModelProps
       </Popover>
     </div>
   );
-}
+};
+
+export default memo(ModelSelector);
