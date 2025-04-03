@@ -1,7 +1,7 @@
 import { Geist, Geist_Mono } from 'next/font/google';
 
 import './globals.css';
-import Providers from '@/components/Providers';
+import Provider from '@/components/provider';
 import { Toaster } from '@/components/ui/sonner';
 import { APP_DESCRIPTION, APP_NAME } from '@/lib/constant';
 
@@ -40,10 +40,10 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Providers attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
+        <Provider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
           <Toaster position='top-center' />
           {children}
-        </Providers>
+        </Provider>
       </body>
     </html>
   );

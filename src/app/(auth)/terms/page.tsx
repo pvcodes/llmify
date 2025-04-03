@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-import ModeToggle from '@/components/ModeToggle';
+import ModeToggle from '@/components/mode-toggle';
 import {
   Accordion,
   AccordionContent,

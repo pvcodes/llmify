@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
-import ModeToggle from './ModeToggle';
+import ModeToggle from './mode-toggle';
 import SelectAiModel from './select-ai-model';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';

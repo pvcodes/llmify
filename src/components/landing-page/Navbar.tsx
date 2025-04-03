@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
 
-import ModeToggle from '@/components/ModeToggle';
+import ModeToggle from '@/components/mode-toggle';
 import {
   NavigationMenu,
   NavigationMenuItem,
