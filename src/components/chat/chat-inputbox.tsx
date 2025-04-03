@@ -1,7 +1,14 @@
 'use client';
 
 import { BillingLevel } from '@prisma/client';
-import { LucideSquareSquare, SendHorizonal, Settings2Icon, X } from 'lucide-react';
+import {
+  CheckCircle2Icon,
+  Cloud,
+  LucideSquareSquare,
+  SendHorizonal,
+  Settings2Icon,
+  X,
+} from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -128,7 +135,7 @@ export default function ChatInputBox({
       <div className='flex flex-col-reverse md:flex-row md:justify-between w-full gap-2 md:gap-0'>
         <div className='flex items-center gap-3 justify-between'>
           <Badge variant='outline' className='border-opacity-40'>
-            Tokens: {(tokenInfo.usage / 1000).toFixed(1)}K{' '}
+            Tokens Usage: {(tokenInfo.usage / 1000).toFixed(1)}K{' '}
             {tokenInfo.tier === BillingLevel.FREE && ` / ${MAX_FREE_TOKEN / 1000}K`}
           </Badge>
           <Badge variant='secondary' className='opacity-80'>
@@ -184,25 +191,27 @@ export default function ChatInputBox({
                         pressed={useSelectedProviderApiKey}
                         disabled={!hasSelectedProviderApiKey}
                         className={cn(
-                          'flex items-center gap-2 px-2 py-1 rounded-md',
-                          !hasSelectedProviderApiKey && 'opacity-50 cursor-not-allowed'
+                          'flex items-center gap-2 px-3 py-1.5 rounded-md border border-gray-300 transition',
+                          !hasSelectedProviderApiKey && 'cursor-not-allowed opacity-50'
                         )}
                       >
-                        <span className='text-xs'>
-                          {useSelectedProviderApiKey ? 'Your API' : 'LLMify'}
-                        </span>
-                        <div
-                          className={cn(
-                            'w-2 h-2 rounded-full',
-                            useSelectedProviderApiKey ? 'bg-green-500 animate-pulse' : 'bg-blue-500'
-                          )}
-                        />
+                        {useSelectedProviderApiKey ? (
+                          <>
+                            <CheckCircle2Icon className='w-4 h-4 text-green-500' />
+                            <span className='text-sm'>Use My API Key</span>
+                          </>
+                        ) : (
+                          <>
+                            <Cloud className='w-4 h-4 text-blue-500' />
+                            <span className='text-sm'>Use LLMify&apos;s API</span>
+                          </>
+                        )}
                       </Toggle>
                     </TooltipTrigger>
                     <TooltipContent>
                       {useSelectedProviderApiKey
-                        ? 'Using your provided API Key'
-                        : 'Powered by LLMify'}
+                        ? 'Requests will be sent using your API key. You are responsible for any associated costs.'
+                        : "Requests will be sent using LLMify's API. Usage limits may apply."}
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
