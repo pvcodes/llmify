@@ -5,64 +5,6 @@ import { createXai } from '@ai-sdk/xai';
 
 import type { ModelProvider, Models } from './models';
 
-export async function validateProviderAPIKey(
-  provider: ModelProvider,
-  apiKey: string
-): Promise<boolean> {
-  if (!apiKey || typeof apiKey !== 'string') {
-    return false;
-  }
-
-  try {
-    switch (provider) {
-      case 'OpenAI': {
-        const response = await fetch('https://api.openai.com/v1/models', {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-          },
-        });
-        return response.ok;
-      }
-      case 'Anthropic': {
-        const response = await fetch('https://api.anthropic.com/v1/models', {
-          method: 'GET',
-          headers: {
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01', // Include API version header
-          },
-        });
-        return response.ok;
-      }
-      case 'DeepSeek': {
-        const response = await fetch('https://api.deepseek.com/v1/models', {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-          },
-        });
-        return response.ok;
-      }
-      case 'xAi': {
-        const response = await fetch(`https://api.x.ai/v1/api-key`, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-          },
-        });
-        return response.ok;
-      }
-      default: {
-        console.warn(`Unrecognized provider: ${provider}`);
-        return false;
-      }
-    }
-  } catch (error) {
-    console.error(`Error validating API key for ${provider}:`, error);
-    return false;
-  }
-}
-
 const PROVIDER_API_KEYS = {
   OpenAI: process.env.API_KEY_OPENAI!,
   Anthropic: process.env.API_KEY_ANTHROPIC!,

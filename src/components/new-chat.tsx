@@ -14,12 +14,12 @@ import {
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { revalidateSidebar } from '@/app/(chat)/chat/action';
+import { createNewChat, revalidateSidebar } from '@/actions/chat-message';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { cn, generateChatId } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 import { useSidebar } from './ui/sidebar';
 
@@ -141,20 +141,13 @@ const HeroTextbox = () => {
       setIsLoading(true);
       setError('');
 
-      const chatId = generateChatId();
-      const response = await fetch('/api/x/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: chatId, prompt }),
-      });
+      const response = await createNewChat(prompt);
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data?.error?.message || 'Failed to create chat');
+      if (!response.success) {
+        setError(response.error!);
       }
-
       await revalidateSidebar();
-      router.push(`/chat/${chatId}`);
+      router.push(`/chat/${response.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {

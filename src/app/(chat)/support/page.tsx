@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import React, { useState } from 'react';
 
+import { submitQuery } from '@/actions/misc';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,18 +35,8 @@ export default function SupportForm() {
     setSubmitStatus(null);
 
     try {
-      const response = await fetch('/api/submit-query', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          subject: formData.subject,
-          message: formData.message,
-        }),
-      });
-
-      if (!response.ok) {
+      const response = await submitQuery(formData);
+      if (!response.success) {
         throw new Error('Failed to submit query');
       }
 

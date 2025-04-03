@@ -3,8 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getServerSession } from 'next-auth';
 
+import { getChats } from '@/actions/chat-message';
 import { authOptions } from '@/app/(auth)/auth';
-import { getChats } from '@/app/(chat)/chat/action';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Sidebar,

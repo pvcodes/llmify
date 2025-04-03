@@ -2,12 +2,11 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 
+import { getUserTierDetails } from '@/actions/misc';
 import { authOptions } from '@/app/(auth)/auth';
 import { AppSidebar } from '@/components/app-sidebar';
 import Navbar from '@/components/navbar';
 import { SidebarProvider } from '@/components/ui/sidebar';
-
-import { getUserTierDetails } from './actions';
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();

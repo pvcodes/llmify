@@ -3,6 +3,7 @@
 import { Lock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
+import { validateProviderAPIKey } from '@/actions/ai';
 import { Accordion } from '@/components/ui/accordion';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +15,6 @@ import {
 import useChatStore from '@/store/useChatStore';
 
 import { APIKeyAccordion } from './APIKeyAccordion';
-import { validateApiKey } from './utils';
 
 import type { APIKeyState } from './types';
 
@@ -61,7 +61,7 @@ export function APIKeysTab() {
       status: { ...prev.status, [provider]: null },
     }));
 
-    const isValid = await validateApiKey(provider, key);
+    const isValid = await validateProviderAPIKey(provider, key);
 
     if (isValid) {
       await setApiKey(provider, key);

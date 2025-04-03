@@ -95,7 +95,7 @@ export function APIKeyAccordion({
                 ) : (
                   <AlertCircle className='h-4 w-4 text-red-500' />
                 )}
-                <span>
+                <span className='text-black dark:bg-gray-50'>
                   {status[provider] === 'saved'
                     ? 'Key saved successfully'
                     : status[provider] === 'copied'

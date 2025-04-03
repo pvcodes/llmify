@@ -1,11 +1,10 @@
 import { getServerSession } from 'next-auth';
 
+import { getIntitalMessages } from '@/actions/chat-message';
+import { getUserTierDetails } from '@/actions/misc';
 import { authOptions } from '@/app/(auth)/auth';
 import Chat from '@/components/chat';
 import { ChatNotFound } from '@/components/chat-notfound';
-
-import { getUserTierDetails } from '../../actions';
-import { getIntitalMessages } from '../action';
 
 export default async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
   const user = (await getServerSession(authOptions))?.user;

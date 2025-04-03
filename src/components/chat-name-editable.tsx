@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 
+import { updateChatName } from '@/actions/chat-message';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -56,23 +57,16 @@ export default function ChatNameEditable({ chat, className }: ChatNameEditablePr
 
     try {
       setIsLoading(true);
+      const response = await updateChatName({ chatId: chat.id, name: trimmedName });
 
-      const res = await fetch(`/api/x/chat/${chat.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: trimmedName }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to update chat name');
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to update chat name');
       }
       setIsEditing(false);
     } catch (error) {
       console.error('Error saving chat name:', error);
-      // Reset to original name on error
       setName(chat.name ?? chat.id);
-      toast('Chat title already exists, try another');
+      toast((error as Error).message);
     } finally {
       setIsLoading(false);
     }
