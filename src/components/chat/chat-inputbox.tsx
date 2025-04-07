@@ -144,6 +144,14 @@ export default function ChatInputBox({
           <Badge variant='secondary' className='opacity-80'>
             {modelConfig.label}
           </Badge>
+          {useSelectedProviderApiKey && (
+            <Badge variant='secondary' className='opacity-80'>
+              <>
+                <CheckCircle2Icon className='w-4 h-4 text-green-500' />
+                User API Key
+              </>
+            </Badge>
+          )}
         </div>
         <Button variant='secondary' size='sm' onClick={() => setShowTuneSetting((prev) => !prev)}>
           {showTuneSetting ? (
