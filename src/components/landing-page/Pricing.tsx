@@ -52,7 +52,7 @@ export const Pricing = () => {
   };
 
   return (
-    <section id='plan' className='container py-24 sm:py-32'>
+    <section id='plans' className='container py-24 sm:py-32'>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -84,7 +84,10 @@ export const Pricing = () => {
             <Card>
               <CardHeader>
                 <div>
-                  <span className='text-3xl font-bold'>₹{plan.price}</span>
+                  <span className='text-3xl font-bold'>
+                    {plan.currencySymbol}
+                    {plan.price}
+                  </span>
                   <span className='text-muted-foreground'> /month</span>
                 </div>
 

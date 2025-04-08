@@ -30,7 +30,7 @@ const routeList: RouteProps[] = [
     label: 'About Us',
   },
   {
-    href: '#pricing',
+    href: '#plans',
     label: 'Pricing',
   },
   {
