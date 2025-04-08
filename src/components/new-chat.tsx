@@ -23,7 +23,7 @@ import { cn } from '@/lib/utils';
 
 import { useSidebar } from './ui/sidebar';
 
-import type { Chat } from '@prisma/client';
+import type { BillingLevel, Chat } from '@prisma/client';
 import type { Message } from 'ai';
 
 // Constants
@@ -270,9 +270,10 @@ const HeroTextbox = () => {
 // Main Component
 interface NewChatProps {
   recentChats: Array<Chat & { messages: Message[] }>;
+  tier: BillingLevel;
 }
 
-export default function NewChat({ recentChats }: NewChatProps) {
+export default function NewChat({ recentChats, tier }: NewChatProps) {
   const { setOpenMobile } = useSidebar();
   const router = useRouter();
 
@@ -325,27 +326,57 @@ export default function NewChat({ recentChats }: NewChatProps) {
         <HeroTextbox />
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className='w-full'
-      >
-        <Card className='border-primary/50 bg-primary/10'>
-          <CardHeader>
-            <CardTitle className='text-sm font-medium'>Already have an API key?</CardTitle>
-            <CardDescription className='text-xs text-muted-foreground'>
-              Add your key in settings to switch models
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => router.push('/settings')}>
-              Add API Key
-              <ArrowRight className='w-3 h-3 ml-1' />
-            </Button>
-          </CardContent>
-        </Card>
-      </motion.div>
+      <div className='grid gap-4 w-full md:grid-cols-2'>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className='w-full'
+        >
+          <Card className='border-primary/50 bg-primary/10 h-full'>
+            <CardHeader>
+              <CardTitle className='text-sm font-medium'>Already have an API key?</CardTitle>
+              <CardDescription className='text-xs text-muted-foreground'>
+                Add your key in settings to switch models
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => router.push('/settings')} className='w-full sm:w-auto'>
+                Add API Key
+                <ArrowRight className='w-3 h-3 ml-1' />
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {tier === 'FREE' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+            className='w-full'
+          >
+            <Card className='border-indigo-400/50 bg-indigo-400/10 h-full'>
+              <CardHeader>
+                <CardTitle className='text-sm font-medium'>Don&apos;t have an API key?</CardTitle>
+                <CardDescription className='text-xs text-muted-foreground'>
+                  Check out our plans to get started
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button
+                  onClick={() => router.push('/plans')}
+                  variant='outline'
+                  className='w-full sm:w-auto border-indigo-400/50 hover:bg-indigo-400/20'
+                >
+                  View Plans
+                  <ArrowRight className='w-3 h-3 ml-1' />
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </div>
 
       {/* Recent Chats Section */}
       {recentChats.length > 0 ? (

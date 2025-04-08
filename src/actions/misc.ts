@@ -48,14 +48,14 @@ export async function hashString(input: string): Promise<string> {
   return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-export const getAuthenticatedUser = async () => {
+export const getAuthenticatedUser = async (redirectUrl: string = '/signin') => {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
-    return redirect('/signin');
+    return redirect(redirectUrl);
   }
   const user = await db.user.findUnique({ where: { email: session.user.email } });
   if (!user) {
-    return redirect('/signin');
+    return redirect(redirectUrl);
   }
 
   return user;

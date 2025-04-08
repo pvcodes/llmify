@@ -1,3 +1,4 @@
+import { BillingLevel } from '@prisma/client';
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -6,17 +7,21 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from '@/components/ui/card';
 import { PLANS } from '@/lib/plans';
 
-const pricingList = [
+const plans = [
   {
-    title: 'FREE',
+    title: 'Free',
     price: 0,
-    description: 'Explore all LLMs with your API key.',
-    buttonText: 'Get Started',
+    description: 'Experience powerful AI capabilities at no cost using your own API key!',
+    currency: 'USD',
+    currencySymbol: '$',
     benefitList: [
-      'Unlimited Chats',
-      'Change models anytime during chat',
-      'Access to all streamlined LLM models',
+      '100k free tokens to get started',
+      'Unlimited conversations',
+      'Switch between models seamlessly',
+      'Access to selected OpenAI, DeepSeek, and Anthropic models',
+      "Access all the features if you got your model's API key!",
     ],
+    tier: BillingLevel.FREE,
   },
   ...PLANS,
 ];
@@ -47,7 +52,7 @@ export const Pricing = () => {
   };
 
   return (
-    <section id='pricing' className='container py-24 sm:py-32'>
+    <section id='plan' className='container py-24 sm:py-32'>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -74,20 +79,18 @@ export const Pricing = () => {
         whileInView='show'
         viewport={{ once: true, margin: '-50px' }}
       >
-        {pricingList.map((pricing) => (
-          <motion.div key={pricing.title}>
+        {plans.map((plan) => (
+          <motion.div key={plan.title}>
             <Card>
               <CardHeader>
                 <div>
-                  <span className='text-3xl font-bold'>₹{pricing.price}</span>
+                  <span className='text-3xl font-bold'>₹{plan.price}</span>
                   <span className='text-muted-foreground'> /month</span>
                 </div>
 
                 <CardDescription>
-                  {pricing.description}
-                  {pricing.title === 'Free' && (
-                    <p>No API key? Still can use 5000 tokens for free</p>
-                  )}
+                  {plan.description}
+                  {plan.title === 'Free' && <p>No API key? Still can use 5000 tokens for free</p>}
                 </CardDescription>
               </CardHeader>
 
@@ -95,10 +98,10 @@ export const Pricing = () => {
                 <Button
                   className='w-full'
                   onClick={() =>
-                    pricing.title === 'FREE' ? router.push('/new') : router.push('/plans')
+                    plan.tier === 'FREE' ? router.push('/new') : router.push('/plans')
                   }
                 >
-                  {pricing.buttonText}
+                  Get Started
                 </Button>
               </CardContent>
 
@@ -106,7 +109,7 @@ export const Pricing = () => {
 
               <CardFooter className='flex'>
                 <motion.div className='space-y-4' initial='hidden' animate='visible'>
-                  {pricing.benefitList.map((benefit: string, i: number) => (
+                  {plan.benefitList.map((benefit: string, i: number) => (
                     <motion.span key={benefit} className='flex' custom={i} variants={listItem}>
                       <motion.div
                         animate={{
