@@ -1,4 +1,5 @@
 'use server';
+import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 
 import { authOptions } from '@/app/(auth)/auth';
@@ -6,9 +7,9 @@ import db from '@/db';
 
 export const submitQuery = async ({ message, subject }: { message: string; subject: string }) => {
   try {
-    const session = await getServerSession(authOptions);
+    const user = await getAuthenticatedUser();
 
-    if (!session?.user?.email) {
+    if (!user?.email) {
       throw new Error('User not authenticated');
     }
 
@@ -18,7 +19,7 @@ export const submitQuery = async ({ message, subject }: { message: string; subje
         subject,
         user: {
           connect: {
-            email: session.user.email,
+            email: user.email,
           },
         },
       },
@@ -37,4 +38,25 @@ export const getUserTierDetails = async (email: string) => {
     include: { billing: true },
   });
   return tier?.billing;
+};
+
+export async function hashString(input: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(input);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+export const getAuthenticatedUser = async () => {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) {
+    return redirect('/signin');
+  }
+  const user = await db.user.findUnique({ where: { email: session.user.email } });
+  if (!user) {
+    return redirect('/signin');
+  }
+
+  return user;
 };

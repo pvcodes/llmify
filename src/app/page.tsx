@@ -1,13 +1,11 @@
 import { redirect } from 'next/navigation';
-import { getServerSession } from 'next-auth';
 import React from 'react';
 
+import { getAuthenticatedUser } from '@/actions/misc';
 import Landing from '@/components/landing-page';
 
-import { authOptions } from './(auth)/auth';
-
 export default async function Home() {
-  const session = await getServerSession(authOptions);
-  if (session) redirect('/new');
+  const user = await getAuthenticatedUser();
+  if (user) redirect('/new');
   return <Landing />;
 }

@@ -42,9 +42,7 @@ export default function User() {
           <DropdownMenuItem onClick={() => router.push('/settings?tab=preferences')}>
             Profile
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => router.push('/billing')} disabled>
-            Billing
-          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push('/plans')}>Billing</DropdownMenuItem>
           <DropdownMenuItem onClick={() => router.push('/settings')}>Settings</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />

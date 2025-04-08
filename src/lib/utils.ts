@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from 'clsx';
+import { format } from 'date-fns';
 import { twMerge } from 'tailwind-merge';
 import { v4 as uuid } from 'uuid';
 
@@ -19,4 +20,8 @@ export const hasApiKeyForSelectedModel = (
 ) => {
   if (Object.keys(apiKeys).includes(modelProvider)) return true;
   return false;
+};
+
+export const formatDate = (date: Date) => {
+  return format(new Date(date), 'MMM d, yyyy');
 };

@@ -1,10 +1,9 @@
 import { MessageSquareDashed, PlusIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getServerSession } from 'next-auth';
 
 import { getChats } from '@/actions/chat-message';
-import { authOptions } from '@/app/(auth)/auth';
+import { getAuthenticatedUser } from '@/actions/misc';
 import { Button, buttonVariants } from '@/components/ui/button';
 import {
   Sidebar,
@@ -20,8 +19,8 @@ import { appImage } from '@/lib/images';
 import ChatNameEditable from './chat-name-editable';
 
 export async function AppSidebar() {
-  const session = await getServerSession(authOptions);
-  const chats = (await getChats(session?.user?.email as string)) || [];
+  const user = await getAuthenticatedUser();
+  const chats = (await getChats(user.email)) ?? [];
 
   return (
     <Sidebar className='border-r'>

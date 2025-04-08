@@ -1,9 +1,8 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { generateText, streamText, type Message as AiMessage, type UIMessage } from 'ai';
 import { type NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
 
-import { authOptions } from '@/app/(auth)/auth';
+import { getAuthenticatedUser } from '@/actions/misc';
 import db from '@/db';
 import { model } from '@/lib/ai';
 import { ModelProvidersViaTier } from '@/lib/ai/models';
@@ -15,14 +14,12 @@ import { payloadSchema } from './schema';
 export async function POST(req: NextRequest) {
   try {
     // Step 1: Get the current user and parse the incoming request
-    const [sessionResult, payloadRaw] = await Promise.all([
-      getServerSession(authOptions),
+    const [user, payloadRaw] = await Promise.all([
+      getAuthenticatedUser(),
       req.json().catch(() => ({})),
     ]);
     const rawApiKey = req.headers.get('x-provider-key');
     const { messages }: { messages: UIMessage[]; [key: string]: unknown } = payloadRaw; // had to do ugly way zod validation would be tough to have UiMessage schema
-
-    const user = sessionResult?.user;
 
     // Step 2: Validate the request data
     const parseResult = payloadSchema.safeParse({

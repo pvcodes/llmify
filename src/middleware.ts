@@ -22,7 +22,7 @@ export async function middleware(request: NextRequest) {
 
   // Redirect unauthenticated users to login page if trying to access a protected route
   if (!token && !isPublicPath) {
-    const url = new URL('/login', request.url);
+    const url = new URL('/signin', request.url);
     url.searchParams.set('callbackUrl', encodeURI(request.url));
     return NextResponse.redirect(url);
   }

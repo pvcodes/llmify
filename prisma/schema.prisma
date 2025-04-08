@@ -8,27 +8,29 @@ datasource db {
 }
 
 model User {
-  id           Int            @id @default(autoincrement())
-  name         String
-  email        String         @unique
-  password     String
-  img_url      String?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  chats        Chat[]
-  billing      Billing?
-  SupportQuery SupportQuery[]
+  id                 Int                  @id @default(autoincrement())
+  name               String
+  email              String               @unique
+  password           String
+  img_url            String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  chats              Chat[]
+  billing            Billing?
+  SupportQuery       SupportQuery[]
+  PaypalOrderDetails PaypalOrderDetails[]
 }
 
 model Billing {
-  id         Int          @id @default(autoincrement())
-  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId     Int          @unique
-  level      BillingLevel @default(FREE)
-  tokenUsage Int          @default(0)
-  startDate  DateTime     @default(now())
-  endDate    DateTime?
-  isValid    Boolean      @default(false)
+  id             Int          @id @default(autoincrement())
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         Int          @unique
+  paymentOrderId String?      @unique
+  level          BillingLevel @default(FREE)
+  tokenUsage     Int          @default(0)
+  startDate      DateTime     @default(now())
+  endDate        DateTime?
+  isValid        Boolean      @default(false)
 }
 
 model Chat {
@@ -69,6 +71,16 @@ model SupportQuery {
   updatedAt DateTime @updatedAt
 }
 
+model PaypalOrderDetails {
+  id        Int               @id @default(autoincrement())
+  orderId   String            @unique // PayPal order ID
+  tier      BillingLevel
+  user      User              @relation(fields: [userId], references: [id]) // To link to user
+  createdAt DateTime          @default(now())
+  status    PaypalOrderStatus // Custom status enum
+  userId    Int
+}
+
 enum MessageRole {
   system
   user
@@ -80,4 +92,10 @@ enum BillingLevel {
   FREE
   PREMIUM
   ENTERPRISE
+}
+
+enum PaypalOrderStatus {
+  CREATED
+  COMPLETED
+  FAILED
 }

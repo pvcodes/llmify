@@ -1,18 +1,17 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { getServerSession } from 'next-auth';
 
-import { authOptions } from '@/app/(auth)/auth';
 import db from '@/db';
 import { CHAT_TITLE_PROMPT } from '@/lib/ai/prompt';
 import { generateChatId } from '@/lib/utils';
 
 import { generateFromAi } from './ai';
+import { getAuthenticatedUser } from './misc';
 
 export const createNewChat = async (prompt: string) => {
   try {
-    const user = (await getServerSession(authOptions))?.user;
+    const user = await getAuthenticatedUser();
     const id = generateChatId();
     const name = (await generateFromAi({ prompt, systemPrompt: CHAT_TITLE_PROMPT })) ?? 'Untitled';
 
@@ -45,12 +44,12 @@ export const createNewChat = async (prompt: string) => {
 
 export const updateChatName = async ({ chatId, name }: { chatId: string; name: string }) => {
   try {
-    const session = await getServerSession(authOptions);
+    const user = await getAuthenticatedUser();
     await db.chat.update({
       where: {
         id: chatId,
         user: {
-          email: session?.user.email,
+          email: user.email,
         },
       },
       data: { name },

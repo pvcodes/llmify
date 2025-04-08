@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 
+import { usePreviousPath } from '@/components/previous-path-provider';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -17,6 +18,7 @@ import { Separator } from '@/components/ui/separator';
 import { googleIcon } from '@/lib/images';
 
 export default function SignIn() {
+  const prevPath = usePreviousPath() ?? '/new';
   return (
     <div className='flex min-h-screen items-center justify-center py-12 px-4 sm:px-6 lg:px-8'>
       <Card className='w-full max-w-md'>
@@ -30,7 +32,7 @@ export default function SignIn() {
           <Button
             variant='outline'
             className='w-full'
-            onClick={() => signIn('google', { callbackUrl: '/new' })}
+            onClick={() => signIn('google', { callbackUrl: prevPath })}
           >
             {/* <Mail className="mr-2 h-4 w-4" /> */}
             <Image src={googleIcon} width={14} height={14} alt='Google Icon' />
@@ -47,7 +49,7 @@ export default function SignIn() {
           <Button
             variant='outline'
             className='w-full '
-            onClick={() => signIn('github', { callbackUrl: '/new' })}
+            onClick={() => signIn('github', { callbackUrl: prevPath })}
           >
             <Github className='mr-2 h-4 w-4' />
             Sign in with GitHub

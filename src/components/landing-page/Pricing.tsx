@@ -1,35 +1,14 @@
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader } from '@/components/ui/card';
+import { PLANS } from '@/lib/plans';
 
-enum PopularPlanType {
-  NO = 0,
-  YES = 1,
-}
-
-interface PricingProps {
-  title: string;
-  popular: PopularPlanType;
-  price: number;
-  description: string;
-  buttonText: string;
-  benefitList: string[];
-}
-
-const pricingList: PricingProps[] = [
+const pricingList = [
   {
-    title: 'Free',
-    popular: 0,
+    title: 'FREE',
     price: 0,
     description: 'Explore all LLMs with your API key.',
     buttonText: 'Get Started',
@@ -39,35 +18,12 @@ const pricingList: PricingProps[] = [
       'Access to all streamlined LLM models',
     ],
   },
-  {
-    title: 'Premium',
-    popular: 1,
-    price: 299,
-    description: 'Unlock more potential with our Premium plan.',
-    buttonText: 'Get Started',
-    benefitList: [
-      'Unlimited Chats',
-      'Change models anytime during chat',
-      'Access to 3 LLM models (GPT, Gemini, DeepSeek)',
-      '20,000 tokens per month',
-    ],
-  },
-  {
-    title: 'Enterprise',
-    popular: 0,
-    price: 999,
-    description: 'Maximize your capabilities with our Enterprise plan.',
-    buttonText: 'Contact Us',
-    benefitList: [
-      'Unlimited Chats',
-      'Change models anytime during chat',
-      'Access to all LLM models',
-      'No token limit',
-    ],
-  },
+  ...PLANS,
 ];
 
 export const Pricing = () => {
+  const router = useRouter();
+
   // Animation variants
   const container = {
     hidden: { opacity: 0 },
@@ -75,40 +31,6 @@ export const Pricing = () => {
       opacity: 1,
       transition: {
         staggerChildren: 0.2,
-      },
-    },
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 50 },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: 'spring',
-        bounce: 0.4,
-        duration: 0.8,
-      },
-    },
-  };
-
-  const popularItem = {
-    hidden: { opacity: 0, y: 50 },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: 'spring',
-        bounce: 0.4,
-        duration: 0.8,
-      },
-    },
-    hover: {
-      y: -10,
-      transition: {
-        type: 'spring',
-        stiffness: 300,
-        damping: 10,
       },
     },
   };
@@ -152,39 +74,10 @@ export const Pricing = () => {
         whileInView='show'
         viewport={{ once: true, margin: '-50px' }}
       >
-        {pricingList.map((pricing: PricingProps) => (
-          <motion.div
-            key={pricing.title}
-            variants={pricing.popular === PopularPlanType.YES ? popularItem : item}
-            whileHover={pricing.popular === PopularPlanType.YES ? 'hover' : undefined}
-          >
-            <Card
-              className={
-                pricing.popular === PopularPlanType.YES
-                  ? 'drop-shadow-xl shadow-black/10 dark:shadow-white/10 relative border-primary'
-                  : ''
-              }
-            >
-              {pricing.popular === PopularPlanType.YES && (
-                <motion.div
-                  className='absolute -top-3 -right-3 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full'
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', delay: 0.3 }}
-                >
-                  Popular
-                </motion.div>
-              )}
-
+        {pricingList.map((pricing) => (
+          <motion.div key={pricing.title}>
+            <Card>
               <CardHeader>
-                <CardTitle className='flex item-center justify-between'>
-                  {pricing.title}
-                  {pricing.popular === PopularPlanType.YES ? (
-                    <Badge variant='secondary' className='text-sm text-primary'>
-                      Most popular
-                    </Badge>
-                  ) : null}
-                </CardTitle>
                 <div>
                   <span className='text-3xl font-bold'>₹{pricing.price}</span>
                   <span className='text-muted-foreground'> /month</span>
@@ -199,7 +92,12 @@ export const Pricing = () => {
               </CardHeader>
 
               <CardContent>
-                <Button className='w-full' disabled={pricing.title !== 'Free'}>
+                <Button
+                  className='w-full'
+                  onClick={() =>
+                    pricing.title === 'FREE' ? router.push('/new') : router.push('/plans')
+                  }
+                >
                   {pricing.buttonText}
                 </Button>
               </CardContent>
