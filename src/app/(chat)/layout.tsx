@@ -10,7 +10,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get('sidebar_state')?.value === 'true';
   const user = await getAuthenticatedUser();
-  if (!user) return redirect('/signin');
+  if (!user) return redirect('/'); // Landing Page
 
   const userBillingDetails = await getUserTierDetails(user?.email);
   if (!userBillingDetails) return; // should not be here, 'default level is FREE, it will never fail, until DB is down'
