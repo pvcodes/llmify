@@ -1,3 +1,4 @@
+import { BillingLevel } from '@prisma/client';
 import { Check, Info } from 'lucide-react';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
@@ -11,6 +12,7 @@ import {
   CardTitle,
   CardFooter,
 } from '@/components/ui/card';
+import { PLANS } from '@/lib/plans';
 
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -138,22 +140,20 @@ export const HeroCards = () => {
 
         <CardFooter className='flex flex-col'>
           <div className='space-y-4'>
-            {[
-              'Unlimited Chats',
-              'Change model at any time during chat',
-              'Access to all streamline LLM models',
-            ].map((benefit: string) => (
-              <span key={benefit} className='flex'>
-                <Check className='text-green-500' /> <h3 className='ml-2'>{benefit}</h3>
-              </span>
-            ))}
+            {PLANS.find((plan) => plan.tier === BillingLevel.FREE)?.benefitList.map(
+              (benefit: string) => (
+                <span key={benefit} className='flex'>
+                  <Check className='text-green-500' /> <h3 className='ml text-sm'>{benefit}</h3>
+                </span>
+              )
+            )}
           </div>
           <Alert className='mt-2'>
             <Info className='h-4 w-4' />
             <AlertTitle>No APIs?</AlertTitle>
             <AlertDescription>
-              Try out our universal API key to access all Models.{' '}
-              <Link href='#pricing' className='text-blue-700 underline'>
+              Checkout our discounted plans!{' '}
+              <Link href='#plans' className='text-blue-700 underline'>
                 Click here.
               </Link>
             </AlertDescription>

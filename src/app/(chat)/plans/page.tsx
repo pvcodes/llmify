@@ -1,3 +1,4 @@
+import { BillingLevel } from '@prisma/client';
 import { Check, Award, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
@@ -252,49 +253,52 @@ export default async function PlanPage() {
 
       {/* Plans Grid */}
       <section className='grid md:grid-cols-2 gap-6 sm:gap-8 lg:gap-10 pb-12 max-w-5xl mx-auto'>
-        {PLANS.map((pricing: PlanProps) => (
-          <Card
-            key={pricing.title}
-            className='flex flex-col border shadow-sm hover:shadow-md transition-shadow duration-300'
-          >
-            <CardHeader className='pb-4'>
-              <CardTitle className='text-xl sm:text-2xl font-semibold'>{pricing.title}</CardTitle>
-              <div className='flex items-baseline gap-2'>
-                <span className='text-3xl sm:text-4xl font-bold text-primary'>
-                  {pricing.currencySymbol}
-                  {pricing.price}
-                </span>
-                <span className='text-sm text-muted-foreground'>/month</span>
-              </div>
-              <CardDescription className='mt-2 text-sm sm:text-base'>
-                {pricing.description}
-              </CardDescription>
-            </CardHeader>
+        {PLANS.map(
+          (plan: PlanProps) =>
+            plan.tier !== BillingLevel.FREE && (
+              <Card
+                key={plan.title}
+                className='flex flex-col border shadow-sm hover:shadow-md transition-shadow duration-300'
+              >
+                <CardHeader className='pb-4'>
+                  <CardTitle className='text-xl sm:text-2xl font-semibold'>{plan.title}</CardTitle>
+                  <div className='flex items-baseline gap-2'>
+                    <span className='text-3xl sm:text-4xl font-bold text-primary'>
+                      {plan.currencySymbol}
+                      {plan.price}
+                    </span>
+                    <span className='text-sm text-muted-foreground'>/month</span>
+                  </div>
+                  <CardDescription className='mt-2 text-sm sm:text-base'>
+                    {plan.description}
+                  </CardDescription>
+                </CardHeader>
 
-            <CardContent className='pt-0 flex-grow'>
-              <PaypalButton
-                paypalClientId={process.env.PAYPAL_CLIENT_ID!}
-                environment={process.env.NODE_ENV === 'development' ? 'sandbox' : 'production'}
-                tier={pricing.tier}
-              />
-            </CardContent>
+                <CardContent className='pt-0 flex-grow'>
+                  <PaypalButton
+                    paypalClientId={process.env.PAYPAL_CLIENT_ID!}
+                    environment={process.env.NODE_ENV === 'development' ? 'sandbox' : 'production'}
+                    tier={plan.tier}
+                  />
+                </CardContent>
 
-            <hr className='w-11/12 mx-auto border-gray-200 dark:border-gray-800' />
+                <hr className='w-11/12 mx-auto border-gray-200 dark:border-gray-800' />
 
-            <CardFooter className='pt-6'>
-              <ul className='space-y-3 w-full'>
-                {pricing.benefitList.map((benefit: string) => (
-                  <li key={benefit} className='flex items-center gap-2'>
-                    <Check className='h-5 w-5 text-green-500 flex-shrink-0' />
-                    <p className='text-sm sm:text-base text-gray-700 dark:text-gray-300'>
-                      {benefit}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            </CardFooter>
-          </Card>
-        ))}
+                <CardFooter className='pt-6'>
+                  <ul className='space-y-3 w-full'>
+                    {plan.benefitList.map((benefit: string) => (
+                      <li key={benefit} className='flex items-center gap-2'>
+                        <Check className='h-5 w-5 text-green-500 flex-shrink-0' />
+                        <p className='text-sm sm:text-base text-gray-700 dark:text-gray-300'>
+                          {benefit}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </CardFooter>
+              </Card>
+            )
+        )}
       </section>
       <div className='text-center pb-12 flex flex-col'>
         <div>

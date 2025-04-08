@@ -1,4 +1,3 @@
-import { BillingLevel } from '@prisma/client';
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -6,25 +5,6 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from '@/components/ui/card';
 import { PLANS } from '@/lib/plans';
-
-const plans = [
-  {
-    title: 'Free',
-    price: 0,
-    description: 'Experience powerful AI capabilities at no cost using your own API key!',
-    currency: 'USD',
-    currencySymbol: '$',
-    benefitList: [
-      '100k free tokens to get started',
-      'Unlimited conversations',
-      'Switch between models seamlessly',
-      'Access to selected OpenAI, DeepSeek, and Anthropic models',
-      "Access all the features if you got your model's API key!",
-    ],
-    tier: BillingLevel.FREE,
-  },
-  ...PLANS,
-];
 
 export const Pricing = () => {
   const router = useRouter();
@@ -79,7 +59,7 @@ export const Pricing = () => {
         whileInView='show'
         viewport={{ once: true, margin: '-50px' }}
       >
-        {plans.map((plan) => (
+        {PLANS.map((plan) => (
           <motion.div key={plan.title}>
             <Card>
               <CardHeader>

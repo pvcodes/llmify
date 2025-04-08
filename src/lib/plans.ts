@@ -11,6 +11,21 @@ export interface PlanProps {
 // Move static data outside component
 export const PLANS: PlanProps[] = [
   {
+    title: 'Free',
+    price: 0,
+    description: 'Experience powerful AI capabilities at no cost using your own API key!',
+    currency: 'USD',
+    currencySymbol: '$',
+    benefitList: [
+      '100k free tokens to get started',
+      'Unlimited conversations',
+      'Switch between models seamlessly',
+      'Access to selected OpenAI, DeepSeek, and Anthropic models',
+      "Access all the features if you got your model's API key!",
+    ],
+    tier: BillingLevel.FREE,
+  },
+  {
     tier: BillingLevel.PREMIUM,
     title: 'Premium',
     price: 2.99,
