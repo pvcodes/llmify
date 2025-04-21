@@ -1,13 +1,25 @@
+import { permanentRedirect } from 'next/navigation';
+
 import { getUserBilling } from '@/actions/billing';
-import { getRecentChat } from '@/actions/chat-message';
+import { createNewChat, getRecentChat } from '@/actions/chat-message';
 import { getAuthenticatedUser } from '@/actions/misc';
 import NewChat from '@/components/new-chat';
 
 import type { BillingLevel, Chat, Message } from '@prisma/client';
 
-export default async function NewChatPage() {
+export default async function NewChatPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q: string } | undefined>;
+}) {
   const user = await getAuthenticatedUser();
-  const chats = (await getRecentChat(user.email)) as Array<Chat & { messages: Message[] }>; //TODO: Prisma automatically add Message type as it is part of same query
+  const prompt = (await searchParams)?.q;
+  if (prompt) {
+    const response = await createNewChat(prompt);
+    if (response.success) permanentRedirect(`/chat/${response.id}`);
+  }
+
+  const chats = (await getRecentChat(user.email)) as Array<Chat & { messages: Message[] }>;
   const tier = (await getUserBilling(user.id))?.level as BillingLevel;
   return <NewChat recentChats={chats} tier={tier} />;
 }
