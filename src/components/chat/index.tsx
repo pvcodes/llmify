@@ -7,6 +7,7 @@ import React, { useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 
 import { useProviderApiKey } from '@/hooks/use-provider-api-key';
+import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import useChatStore from '@/store/useChatStore';
 
 import { Messages } from '../messages';
@@ -76,8 +77,6 @@ export default function Chat({ id, initialMessages, userBilling }: ChatProps) {
 
       lastSubmitTime.current = Date.now();
 
-      console.error(dataToSendToAI, 123132);
-
       handleSubmit(e, {
         body: {
           modelConfig: (await dataToSendToAI()).modelConfig,
@@ -136,10 +135,13 @@ export default function Chat({ id, initialMessages, userBilling }: ChatProps) {
     },
     [dataToSendToAI, messages, setMessages, reload, router]
   );
+  const [containerRef, endRef, scrollToBottom] = useScrollToBottom<HTMLDivElement>();
 
   return (
     <div className='max-w-4xl mx-auto text-sm'>
       <Messages
+        containerRef={containerRef}
+        endRef={endRef}
         messages={messages}
         handleEditMessageSubmit={handleEditMessageSubmit}
         error={error}
@@ -156,6 +158,7 @@ export default function Chat({ id, initialMessages, userBilling }: ChatProps) {
         onSubmit={handleFormSubmit}
         stop={stop}
         tokenInfo={{ usage: userBilling.tokenUsage, tier: userBilling.level }}
+        scrollToBottom={scrollToBottom}
       />
     </div>
   );

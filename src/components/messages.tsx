@@ -1,14 +1,9 @@
 'use client';
 
 import equal from 'fast-deep-equal';
-// import { motion } from 'framer-motion';
-// import { RefreshCcw, BotIcon } from 'lucide-react';
 import React, { memo, useEffect } from 'react';
 
-// import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-// import { Button } from '@/components/ui/button';
 import { useProviderApiKey } from '@/hooks/use-provider-api-key';
-import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 
 import { AiResponseError, AiResponseLoading } from './ai-response';
 import Markdown from './chat/markdown';
@@ -28,6 +23,8 @@ interface PureMessagesProps {
   handleRetry: () => void;
   status: 'submitted' | 'streaming' | 'ready' | 'error';
   reload: (chatRequestOptions?: ChatRequestOptions) => Promise<string | null | undefined>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  endRef: React.RefObject<HTMLDivElement | null>;
 }
 
 const PureMessages = ({
@@ -37,26 +34,23 @@ const PureMessages = ({
   handleRetry,
   status,
   reload,
+  containerRef,
+  endRef,
 }: PureMessagesProps) => {
-  const [containerRef, messageEndRef] = useScrollToBottom<HTMLDivElement>();
-
   const { dataToSendToAI } = useProviderApiKey();
 
   useEffect(
     () => {
       const fetchInitialResponse = async () => {
-        if (messages.length === 1) {
-          await reload({
-            body: { modelConfig: (await dataToSendToAI()).modelConfig },
-            headers: {
-              'x-provider-key': (await dataToSendToAI()).apiKey as string,
-            },
-            allowEmptySubmit: true,
-          });
-        }
+        await reload({
+          body: { modelConfig: (await dataToSendToAI()).modelConfig },
+          headers: {
+            'x-provider-key': (await dataToSendToAI()).apiKey as string,
+          },
+        });
       };
 
-      fetchInitialResponse();
+      if (messages.length === 1) fetchInitialResponse();
     }, // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
@@ -72,17 +66,16 @@ const PureMessages = ({
             <Markdown message={message} />
           ) : (
             <UserMessage
-              messageContent={message.content}
+              message={message}
+              index={index}
               handleEditMessageSubmit={handleEditMessageSubmit}
-              messageId={message.id}
-              messageIndex={index}
             />
           )}
         </div>
       ))}
       {status === 'submitted' && <AiResponseLoading />}
       {status === 'error' && <AiResponseError error={error} handleRetry={handleRetry} />}
-      <div ref={messageEndRef} className='shrink-0 min-w-[24px] min-h-36' />
+      <div ref={endRef} className='shrink-0 min-w-[24px] min-h-36' />
     </div>
   );
 };
