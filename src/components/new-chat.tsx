@@ -27,7 +27,12 @@ import type { BillingLevel, Chat } from '@prisma/client';
 import type { Message } from 'ai';
 
 // Constants
-const FEATURES = [
+interface Feature {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}
+const FEATURES: Feature[] = [
   {
     icon: <Sparkles className='w-6 h-6' />,
     title: 'Smart AI Models',
@@ -53,7 +58,7 @@ const EXAMPLE_PROMPTS = [
 ];
 
 // Components
-const FeatureCard = ({ feature, index }: { feature: (typeof FEATURES)[0]; index: number }) => (
+const FeatureCard = ({ feature, index }: { feature: Feature; index: number }) => (
   <motion.div
     key={index}
     initial={{ y: 20, opacity: 0 }}
