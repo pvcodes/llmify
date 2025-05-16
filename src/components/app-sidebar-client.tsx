@@ -42,7 +42,7 @@ export function SidebarClient({ userEmail }: { userEmail: string }) {
   return (
     <>
       {/* Sticky App Name with funky styling */}
-      <div className='sticky top-0 z-10 p-2 flex items-center justify-between bg-gray-100 dark:bg-gray-600 pt-3 overflow-hidden'>
+      <div className='sticky top-0 z-10 p-1 flex items-center justify-between bg-gray-100 dark:bg-gray-600 pt-3 overflow-hidden'>
         <div className='flex items-center gap-2'>
           <Image src={appImage} alt='App Logo' className='h-5 w-5 animate-pulse' />
           <span className='text-xl font-bold tracking-wider'>{APP_NAME}</span>

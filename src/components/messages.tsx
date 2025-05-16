@@ -58,7 +58,7 @@ const PureMessages = ({
   return (
     <div
       ref={containerRef}
-      className='relative max-w-4xl h-[calc(100vh-100px)] overflow-auto scrollbar-hidden px-2 md:px-4'
+      className='relative max-w-4xl h-[calc(100vh-100px)] overflow-auto scrollbar-hide px-2 md:px-4'
     >
       {messages.map((message, index) => (
         <div key={message.id} className='flex flex-col my-2'>

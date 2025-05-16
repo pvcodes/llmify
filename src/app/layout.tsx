@@ -40,7 +40,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Provider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
+        <Provider attribute='class' defaultTheme='light'>
           <Toaster position='top-center' />
           {children}
         </Provider>
