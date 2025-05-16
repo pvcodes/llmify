@@ -81,8 +81,20 @@ export const getIntitalMessages = async (chatId: string) => {
   }
 };
 
-export const getChats = async (email: string) => {
+export const getChats = async (email: string, limit: number, page: number) => {
   try {
+    // Validate input parameters
+    if (!email || typeof email !== 'string') {
+      throw new Error('Invalid email provided');
+    }
+    if (limit <= 0 || page <= 0) {
+      throw new Error('Limit and page must be positive numbers');
+    }
+
+    // Calculate offset for pagination
+    const offset = (page - 1) * limit;
+
+    // Fetch chats with pagination
     const chats = await db.chat.findMany({
       where: {
         user: {
@@ -92,11 +104,38 @@ export const getChats = async (email: string) => {
       orderBy: {
         createdAt: 'desc',
       },
+      take: limit,
+      skip: offset,
     });
 
-    return chats;
+    // Get total count for pagination metadata
+    const totalChats = await db.chat.count({
+      where: {
+        user: {
+          email,
+        },
+      },
+    });
+
+    // Calculate total pages
+    const totalPages = Math.ceil(totalChats / limit);
+
+    // Return chats with pagination metadata
+    return {
+      chats,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalChats,
+        limit,
+      },
+    };
   } catch (error) {
-    throw new Error((error as Error).message);
+    // Log error for debugging (in a production environment, use a proper logging service)
+    console.error('Error fetching chats:', error);
+
+    // Throw a standardized error
+    throw new Error(error instanceof Error ? error.message : 'Failed to fetch chats');
   }
 };
 
