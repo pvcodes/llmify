@@ -59,6 +59,7 @@ model ChatSummary {
   chatId  String @unique
   chat    Chat   @relation(fields: [chatId], references: [id], onDelete: Cascade)
   summary String
+  createdAt DateTime    @default(now())
 }
 
 model SupportQuery {

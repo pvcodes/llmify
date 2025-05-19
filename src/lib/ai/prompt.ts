@@ -1,4 +1,4 @@
-import type { UIMessage } from 'ai';
+import type { UIMessage, Message as AiMessage } from 'ai';
 
 // TODO
 export const generalPrompt = `LLMify is a platform which you are been accessed with`;
@@ -38,14 +38,14 @@ export const CHAT_TITLE_PROMPT = `\n
      - do not use quotes or colons`;
 
 export const chatSummarisePrompt = (
-  existingSummary: string,
+  existingSummaries: string[],
   chat_history: Array<UIMessage>
 ) => `Given the following conversation history x a user and an AI assistant, generate a **brief yet comprehensive summary**.  
 Preserve the user’s main intent, key discussion points, and any unresolved questions.  
 Format the output as follows:  
 
 Exisitng Summary:
-${existingSummary}
+${existingSummaries.join(`\n`)}
 
 **Summary Format:**  
 - **User's primary goal:** [Main objective of the user]  
@@ -59,3 +59,15 @@ Here is the conversation history:
 ${JSON.stringify(chat_history)}
 
 Return only the summarized text in the given format, without any additional explanation.`;
+
+export const aiSummaryMessageStruct = (content: string): AiMessage => ({
+  id: 'pvcodes',
+  role: 'assistant',
+  content: `This is the summary of existing chat:\n${content}\n\n`,
+  parts: [
+    {
+      type: 'text',
+      text: `This is the summary of existing chat:\n${content}\n\n`,
+    },
+  ],
+});

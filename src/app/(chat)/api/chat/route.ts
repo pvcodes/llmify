@@ -6,7 +6,7 @@ import { getAuthenticatedUser } from '@/actions/misc';
 import db from '@/db';
 import { model } from '@/lib/ai';
 import { ModelProvidersViaTier } from '@/lib/ai/models';
-import { chatSummarisePrompt, generalPrompt } from '@/lib/ai/prompt';
+import { aiSummaryMessageStruct, chatSummarisePrompt, generalPrompt } from '@/lib/ai/prompt';
 import { MAX_FREE_TOKEN } from '@/lib/constant';
 
 import { payloadSchema } from './schema';
@@ -140,79 +140,63 @@ const chatSummarise = async (
   hasToUpdateBilling: boolean
 ) => {
   try {
-    const aiSummaryMessage = (content: string): AiMessage => ({
-      id: 'pvcodes',
-      role: 'assistant',
-      content: `This is the summary of existing chat:\n${content}\n\n`,
-      parts: [
-        {
-          type: 'text',
-          text: `This is the summary of existing chat:\n${content}\n\n`,
-        },
-      ],
-    });
-
-    // Scenario 1: Less than 10 messages
     if (messages.length < 10) return messages;
 
-    // Scenario 2: Exactly 10 messages (initial summary)
-    if (messages.length === 10) {
-      const { summary, usage } = await summarize('', messages);
-      await db.chatSummary.create({ data: { chatId, summary } });
-      if (hasToUpdateBilling) {
-        await db.billing.update({
-          where: { id: billingId },
-          data: {
-            tokenUsage: { increment: usage.totalTokens },
-          },
-        });
-      }
-      return [aiSummaryMessage(summary), ...messages.slice(-10)];
-    }
-
-    // Retrieve existing summary if needed
-    const chatSummary = await db.chatSummary.findUnique({
+    const existingSummaries = await db.chatSummary.findMany({
       where: { chatId },
+      orderBy: { createdAt: 'asc' },
     });
 
-    // Ensure chatSummary exists before accessing .summary
-    const existingSummary = chatSummary?.summary || '';
+    const summaryMessages = existingSummaries.map((summary) =>
+      aiSummaryMessageStruct(summary.summary)
+    );
 
-    // Scenario 3: Multiple of 10 messages
     if (messages.length % 10 === 0) {
-      const { summary: newSummary, usage } = await summarize(existingSummary, messages);
-      await db.chatSummary.upsert({
-        where: { chatId },
-        update: { summary: newSummary },
-        create: { chatId, summary: newSummary },
-      });
-      if (hasToUpdateBilling) {
-        await db.billing.update({
-          where: { id: billingId },
-          data: {
-            tokenUsage: { increment: usage.totalTokens },
-          },
-        });
-      }
-      return [aiSummaryMessage(newSummary), ...messages.slice(-10)];
-    }
+      const alreadySummarisedChunks = existingSummaries.length;
+      const currentChunkCount = messages.length / 10;
 
-    // Scenario 4: Other message counts
-    return [aiSummaryMessage(existingSummary), ...messages.slice(-10)];
+      if (currentChunkCount > alreadySummarisedChunks) {
+        const last10Messages = messages.slice(-10);
+        const { summary: newSummary, usage } = await summarize(
+          existingSummaries.map((s) => s.summary),
+          last10Messages
+        );
+
+        await db.chatSummary.create({
+          data: { chatId, summary: newSummary },
+        });
+
+        if (hasToUpdateBilling) {
+          await db.billing.update({
+            where: { id: billingId },
+            data: {
+              tokenUsage: { increment: usage.totalTokens },
+            },
+          });
+        }
+
+        return [...summaryMessages, aiSummaryMessageStruct(newSummary), ...last10Messages];
+      }
+
+      return [...summaryMessages, ...messages.slice(-10)];
+    } else {
+      const offsetIdx = messages.length % 10;
+      return [...summaryMessages, ...messages.slice(-offsetIdx)];
+    }
   } catch (error) {
     console.error('Error in chatSummarise:', error);
-    return messages; // Return messages array to prevent breaking the app
+    return messages;
   }
 };
 
-const summarize = async (existingSummary: string, messages: UIMessage[]) => {
+const summarize = async (existingSummaries: string[], messages: UIMessage[]) => {
   const anthropic = createAnthropic({
     apiKey: process.env.API_KEY_ANTHROPIC,
   });
 
   const { text: summary, usage } = await generateText({
     model: anthropic('claude-3-5-haiku-latest'),
-    prompt: chatSummarisePrompt(existingSummary, messages),
+    prompt: chatSummarisePrompt(existingSummaries, messages),
   });
 
   return { summary, usage };
