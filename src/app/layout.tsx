@@ -1,3 +1,4 @@
+import { Analytics } from '@vercel/analytics/next';
 import { Geist, Geist_Mono } from 'next/font/google';
 
 import './globals.css';
@@ -44,6 +45,7 @@ export default function RootLayout({
           <Toaster position='top-center' />
           {children}
         </Provider>
+        <Analytics />
       </body>
     </html>
   );
