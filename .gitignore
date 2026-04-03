@@ -46,3 +46,7 @@ next-env.d.ts
 **/admin/*
 *.py
 users*.json
+/app/generated/prisma
+
+.impeccable.md
+.opencode
