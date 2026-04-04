@@ -1,20 +1,31 @@
-import { Geist, Geist_Mono } from 'next/font/google';
+import { DM_Sans, Oswald, JetBrains_Mono } from 'next/font/google';
 
-import './globals.css';
 import { Provider } from '@/components/Provider';
+import { ThemeProvider } from '@/components/theme-provider';
+import './globals.css';
 import { Toaster } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { APP_DESCRIPTION, APP_NAME } from '@/lib/constant';
+import { cn } from '@/lib/utils';
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const dmSans = DM_Sans({
+  variable: '--font-dm-sans',
   subsets: ['latin'],
+  display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const oswald = Oswald({
+  variable: '--font-oswald',
   subsets: ['latin'],
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: '--font-jetbrains-mono',
+  subsets: ['latin'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -22,8 +33,10 @@ export const metadata: Metadata = {
   description: APP_DESCRIPTION,
 };
 
-export const viewport = {
-  maximumScale: 1, // Disable auto-zoom on mobile Safari
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
@@ -34,16 +47,18 @@ export default function RootLayout({
   return (
     <html
       lang='en'
-      style={{
-        scrollBehavior: 'smooth',
-      }}
       suppressHydrationWarning
+      className={cn(dmSans.variable, oswald.variable, jetbrainsMono.variable)}
     >
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Provider attribute='class' defaultTheme='light'>
-          <Toaster position='top-center' />
-          {children}
-        </Provider>
+      <body className='min-h-screen'>
+        <ThemeProvider>
+          <TooltipProvider delayDuration={200}>
+            <Provider attribute='class' defaultTheme='dark'>
+              <Toaster position='top-center' />
+              {children}
+            </Provider>
+          </TooltipProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -23,11 +23,12 @@ import useChatStore from '@/store/useChatStore';
 import type { BillingLevel } from '@prisma/client';
 
 interface SelectAiModelProps {
+  id?: string;
   setSheetOpen: (open: boolean) => void;
   tier: BillingLevel;
 }
 
-const ModelSelector = ({ setSheetOpen, tier }: SelectAiModelProps) => {
+const ModelSelector = ({ id, setSheetOpen, tier }: SelectAiModelProps) => {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [availableProviders, setAvailableProviders] = useState(ModelProvidersViaTier[tier]);
@@ -73,6 +74,7 @@ const ModelSelector = ({ setSheetOpen, tier }: SelectAiModelProps) => {
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
+            id={id}
             variant='outline'
             role='combobox'
             aria-expanded={open}

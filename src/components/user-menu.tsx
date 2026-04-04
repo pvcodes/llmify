@@ -20,7 +20,7 @@ export default function User() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Avatar>
+        <Avatar id='user-menu'>
           <AvatarImage src={session.data?.user?.image ?? undefined} loading='lazy' />
           <AvatarFallback>
             {session.data?.user?.name

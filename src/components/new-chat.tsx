@@ -1,23 +1,12 @@
 'use client';
 
 import { formatDistanceToNow } from 'date-fns';
-import { motion } from 'framer-motion';
-import {
-  Sparkles,
-  Zap,
-  LayoutDashboard,
-  Settings,
-  MessageSquare,
-  ArrowRight,
-  MessageCircleIcon,
-} from 'lucide-react';
+import { ArrowRight, MessageSquare } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { createNewChat, revalidateSidebar } from '@/actions/chat-message';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 
@@ -26,139 +15,175 @@ import { useSidebar } from './ui/sidebar';
 import type { BillingLevel, Chat } from '@prisma/client';
 import type { Message } from 'ai';
 
-// Constants
-interface Feature {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}
-const FEATURES: Feature[] = [
-  {
-    icon: <Sparkles className='w-6 h-6' />,
-    title: 'Smart AI Models',
-    description: 'Choose from our curated selection of cutting-edge AI models',
-  },
-  {
-    icon: <LayoutDashboard className='w-6 h-6' />,
-    title: 'Customizable UI',
-    description: 'Tailor the interface to your workflow with adjustable layouts',
-  },
-  {
-    icon: <Settings className='w-6 h-6' />,
-    title: 'Fine-Tuned Controls',
-    description: 'Adjust creativity levels, response length, and technical depth',
-  },
-];
-
 const EXAMPLE_PROMPTS = [
   'how to optimize React performance',
   'explain quantum computing simply',
   'best practices for TypeScript',
-  'how to build a REST API with Next.js',
 ];
 
-// Components
-const FeatureCard = ({ feature, index }: { feature: Feature; index: number }) => (
-  <motion.div
-    key={index}
-    initial={{ y: 20, opacity: 0 }}
-    whileInView={{ y: 0, opacity: 1 }}
-    viewport={{ once: true }}
-    transition={{ delay: index * 0.1 }}
-    whileHover={{ y: -5 }}
+const QuickActionCard = ({
+  title,
+  description,
+  onClick,
+}: {
+  title: string;
+  description: string;
+  onClick: () => void;
+}) => (
+  <button
+    onClick={onClick}
+    className='text-left p-4 border bg-card hover:bg-secondary/20 hover:border-primary/50 transition-all cursor-pointer group'
   >
-    <Card className='h-full transition-all hover:border-primary/50'>
-      <CardHeader>
-        <div className='flex items-center gap-3'>
-          <div className='p-2 rounded-lg bg-primary/10 text-primary'>{feature.icon}</div>
-          <CardTitle>{feature.title}</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <CardDescription>{feature.description}</CardDescription>
-      </CardContent>
-    </Card>
-  </motion.div>
+    <div className='flex items-start justify-between gap-4'>
+      <div className='flex-1 min-w-0'>
+        <h3 className='text-sm font-medium mb-1'>{title}</h3>
+        <p className='text-xs text-muted-foreground'>{description}</p>
+      </div>
+      <ArrowRight className='w-4 h-4 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-1 transition-all' />
+    </div>
+  </button>
 );
 
-const RecentChatCard = ({
-  chat,
-  index,
-}: {
-  chat: Chat & { messages: Message[] };
-  index: number;
-}) => {
+const RecentChatItem = ({ chat }: { chat: Chat & { messages: Message[] } }) => {
   const router = useRouter();
 
   return (
-    <motion.div
-      key={index}
-      initial={{ opacity: 0, x: -20 }}
-      whileInView={{ opacity: 1, x: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.1 }}
-      whileHover={{ scale: 1.02 }}
+    <button
+      onClick={() => router.push(`/chat/${chat.id}`)}
+      className='w-full text-left p-3 border bg-card hover:bg-secondary/20 hover:border-primary/50 transition-all'
     >
-      <Card
-        className='cursor-pointer transition-all hover:border-primary/50 h-40 flex flex-col w-80  md:w-full'
-        onClick={() => router.push(`/chat/${chat.id}`)}
-      >
-        <CardHeader className='flex flex-row items-start justify-between space-y-0 pb-2'>
-          <div className='overflow-hidden'>
-            <CardTitle className='text-lg truncate'>{chat.name}</CardTitle>
-            <CardDescription className='line-clamp-1'>
-              {chat?.messages?.[0]?.content ?? 'Nothing yet'}
-            </CardDescription>
-          </div>
-          <MessageSquare className='h-5 w-5 flex-shrink-0 text-muted-foreground' />
-        </CardHeader>
-        <CardContent className='flex-grow flex items-end'>
-          <p className='text-xs text-muted-foreground mt-auto'>
+      <div className='flex items-start gap-3'>
+        <MessageSquare className='w-4 h-4 text-muted-foreground/60 mt-0.5' />
+        <div className='flex-1 min-w-0'>
+          <h4 className='text-sm font-medium truncate'>{chat.name}</h4>
+          <p className='text-xs text-muted-foreground line-clamp-1 mt-0.5'>
+            {chat.messages?.[0]?.content || 'Empty conversation'}
+          </p>
+          <p className='text-xs text-muted-foreground/60 mt-1'>
             {formatDistanceToNow(chat.updatedAt, { addSuffix: true })}
           </p>
-        </CardContent>
-      </Card>
-    </motion.div>
+        </div>
+      </div>
+    </button>
   );
 };
 
-const HeroTextbox = () => {
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-  const [isFocused, setIsFocused] = useState(false);
-  const [randomPrompt] = useState(
-    () => EXAMPLE_PROMPTS[Math.floor(Math.random() * EXAMPLE_PROMPTS.length)]
-  );
-  const router = useRouter();
-  const [prompt, setPrompt] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+const ChatInput = ({
+  inputRef,
+  isFocused,
+  setIsFocused,
+  prompt,
+  setPrompt,
+  isLoading,
+  handleKeyDown,
+}: {
+  inputRef: React.RefObject<HTMLTextAreaElement | null>;
+  isFocused: boolean;
+  setIsFocused: (focused: boolean) => void;
+  prompt: string;
+  setPrompt: (prompt: string) => void;
+  isLoading: boolean;
+  handleKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+}) => {
   const [error, setError] = useState('');
-
-  useEffect(() => inputRef.current?.focus(), []);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!prompt.trim()) {
-      setError('Prompt cannot be empty');
+      setError('Enter a message to start');
       return;
     }
 
     try {
-      setIsLoading(true);
       setError('');
-
       const response = await createNewChat(prompt);
-
       if (!response.success) {
-        setError(response.error!);
+        setError(response.error || 'Failed to create chat');
+        return;
       }
       await revalidateSidebar();
       router.push(`/chat/${response.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  return (
+    <div className='w-full max-w-4xl'>
+      <form onSubmit={handleSubmit} className='relative'>
+        <Textarea
+          ref={inputRef}
+          className={cn(
+            'w-full py-3 px-4 pr-12 text-sm bg-card border resize-none',
+            isFocused ? 'border-primary' : 'border-border',
+            'placeholder:text-muted-foreground/50'
+          )}
+          placeholder='Ask anything...'
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          onKeyDown={handleKeyDown}
+          disabled={isLoading}
+          rows={3}
+        />
+
+        <Button
+          type='submit'
+          size='icon'
+          className={cn(
+            'absolute right-2.5 bottom-2.5 h-8 w-8 transition-colors',
+            prompt.trim() && !isLoading ? 'bg-primary hover:bg-primary/90' : 'bg-muted'
+          )}
+          disabled={!prompt.trim() || isLoading}
+        >
+          {isLoading ? (
+            <div className='w-3.5 h-3.5 border-2 border-background/30 border-t-background rounded-full animate-spin' />
+          ) : (
+            <ArrowRight className='w-3.5 h-3.5' />
+          )}
+        </Button>
+      </form>
+
+      {error && <p className='text-xs text-destructive mt-2'>{error}</p>}
+
+      <div className='flex items-center gap-2 mt-3 justify-center'>
+        <span className='text-xs text-muted-foreground/70'>Try:</span>
+        {EXAMPLE_PROMPTS.map((example) => (
+          <button
+            key={example}
+            onClick={() => {
+              setPrompt(example);
+              inputRef.current?.focus();
+            }}
+            className='text-xs text-muted-foreground hover:text-foreground transition-colors'
+          >
+            {example}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+interface NewChatProps {
+  recentChats: Array<Chat & { messages: Message[] }>;
+  tier: BillingLevel;
+}
+
+export default function NewChat({ recentChats, tier }: NewChatProps) {
+  const { setOpenMobile } = useSidebar();
+  const router = useRouter();
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [isFocused, setIsFocused] = useState(false);
+  const [prompt, setPrompt] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setOpenMobile(false);
+    inputRef.current?.focus();
+  }, [setOpenMobile]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -170,263 +195,75 @@ const HeroTextbox = () => {
         setTimeout(() => inputRef.current?.focus(), 0);
       } else if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
         e.preventDefault();
-        // Use the current textarea value instead of state
-        const currentValue = e.currentTarget.value;
-        if (!currentValue.trim()) {
-          setError('Prompt cannot be empty');
-          return;
-        }
-        setPrompt(currentValue); // Sync the state
-        handleSubmit(e);
+        if (!prompt.trim()) return;
+        setIsLoading(true);
+        createNewChat(prompt)
+          .then(async (response) => {
+            if (response.success) {
+              await revalidateSidebar();
+              router.push(`/chat/${response.id}`);
+            }
+          })
+          .finally(() => setIsLoading(false));
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [prompt]
+    [prompt, router]
   );
 
   return (
-    <>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className='flex flex-col items-center w-full max-w-3xl mx-auto'
-      >
-        <motion.div
-          className={cn(
-            'w-full relative transition-all duration-300',
-            isFocused ? 'scale-[1.02]' : 'scale-100'
-          )}
-        >
-          <motion.div
-            className='absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/10 to-purple-500/10'
-            animate={{ opacity: isFocused ? 1 : 0.7 }}
-            transition={{ duration: 0.3 }}
-          />
+    <div className='flex flex-col min-h-0'>
+      <div className='flex-1 flex flex-col items-center justify-center px-6 py-12'>
+        <div className='w-full max-w-4xl text-center mb-6'>
+          <h1 className='text-2xl font-display uppercase tracking-tight mb-2'>
+            What would you like to explore?
+          </h1>
+          <p className='text-sm text-muted-foreground'>
+            Interact with GPT, Claude, DeepSeek, and more.
+          </p>
+        </div>
 
-          <form onSubmit={handleSubmit} className='relative'>
-            <Textarea
-              ref={inputRef}
-              className={cn(
-                'w-full rounded-2xl py-5 px-6 text-lg border-0 shadow-lg',
-                'bg-background/80 backdrop-blur-sm resize-none pr-16',
-                'focus-visible:ring-2 focus-visible:ring-primary/50',
-                'max-h-[200px]'
-              )}
-              value={prompt}
-              placeholder='Ask me anything...'
-              onChange={(e) => setPrompt(e.target.value)}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              onKeyDown={handleKeyDown}
-              disabled={isLoading}
-              aria-label='AI Chat Input'
-              rows={3}
+        <ChatInput
+          inputRef={inputRef}
+          isFocused={isFocused}
+          setIsFocused={setIsFocused}
+          prompt={prompt}
+          setPrompt={setPrompt}
+          isLoading={isLoading}
+          handleKeyDown={handleKeyDown}
+        />
+      </div>
+
+      <div className='border-t bg-muted/20 px-6 py-6'>
+        <div className='max-w-4xl mx-auto'>
+          <div className='grid sm:grid-cols-2 gap-3'>
+            <QuickActionCard
+              title='Add API Key'
+              description='Use your own keys for more options'
+              onClick={() => router.push('/settings')}
             />
-
-            <motion.div
-              className='absolute right-3 bottom-3'
-              animate={{ scale: isFocused ? 1.1 : 1 }}
-            >
-              <Button
-                type='submit'
-                size='icon'
-                className='rounded-full w-10 h-10 shadow-md bg-primary/90 hover:bg-primary'
-                disabled={isLoading || !prompt.trim()}
-              >
-                {isLoading ? (
-                  <div className='w-5 h-5 border-2 border-background rounded-full animate-spin' />
-                ) : (
-                  <ArrowRight className='w-5 h-5' />
-                )}
-              </Button>
-            </motion.div>
-          </form>
-        </motion.div>
-
-        <motion.div
-          className='mt-4 text-sm text-muted-foreground flex items-center gap-1'
-          animate={{ opacity: isFocused ? 0.7 : 1, y: isFocused ? 5 : 0 }}
-        >
-          <span>Try asking about</span>
-          <motion.span
-            className='text-primary font-medium'
-            animate={{ x: [0, 2, -2, 0] }}
-            transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-          >
-            &quot;{randomPrompt}&quot;
-          </motion.span>
-          <ArrowRight className='w-4 h-4' />
-        </motion.div>
-      </motion.div>
-
-      {error && (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className='text-sm text-destructive mt-2'
-        >
-          {error}
-        </motion.p>
-      )}
-    </>
-  );
-};
-// Main Component
-interface NewChatProps {
-  recentChats: Array<Chat & { messages: Message[] }>;
-  tier: BillingLevel;
-}
-
-export default function NewChat({ recentChats, tier }: NewChatProps) {
-  const { setOpenMobile } = useSidebar();
-  const router = useRouter();
-
-  useEffect(
-    () => setOpenMobile(false),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className='container mx-auto px-4 py-8 md:py-12'
-    >
-      {/* Hero Section */}
-      <div className='flex flex-col items-center text-center mb-16'>
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className='flex items-center justify-center mb-6'
-        >
-          <Badge variant='outline' className='px-4 py-1 text-sm border-primary/50 bg-primary/10'>
-            <Zap className='w-4 h-4 mr-2' />
-            Introducing LLMify
-          </Badge>
-        </motion.div>
-
-        <motion.h1
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className='text-4xl md:text-6xl font-bold tracking-tight mb-4 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent'
-        >
-          Your Intelligent Chat Companion
-        </motion.h1>
-
-        <motion.p
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className='text-xl text-muted-foreground max-w-3xl mb-8'
-        >
-          Experience seamless conversations with AI that understands context, remembers details, and
-          adapts to your needs.
-        </motion.p>
-
-        <HeroTextbox />
-      </div>
-
-      <div className='grid gap-4 w-full md:grid-cols-2'>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className='w-full'
-        >
-          <Card className='border-primary/50 bg-primary/10 h-full'>
-            <CardHeader>
-              <CardTitle className='text-sm font-medium'>Already have an API key?</CardTitle>
-              <CardDescription className='text-xs text-muted-foreground'>
-                Add your key in settings to switch models
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button onClick={() => router.push('/settings')} className='w-full sm:w-auto'>
-                Add API Key
-                <ArrowRight className='w-3 h-3 ml-1' />
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {tier === 'FREE' && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-            className='w-full'
-          >
-            <Card className='border-indigo-400/50 bg-indigo-400/10 h-full'>
-              <CardHeader>
-                <CardTitle className='text-sm font-medium'>Don&apos;t have an API key?</CardTitle>
-                <CardDescription className='text-xs text-muted-foreground'>
-                  Check out our plans to get started
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button
-                  onClick={() => router.push('/plans')}
-                  variant='outline'
-                  className='w-full sm:w-auto border-indigo-400/50 hover:bg-indigo-400/20'
-                >
-                  View Plans
-                  <ArrowRight className='w-3 h-3 ml-1' />
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-      </div>
-
-      {/* Recent Chats Section */}
-      {recentChats.length > 0 ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.2 }}
-          className='mb-20'
-        >
-          <h2 className='text-2xl font-bold mt-10 mb-6'>Continue Where You Left Off</h2>
-          <div className='grid md:grid-cols-3 gap-3'>
-            {recentChats.map((chat, index) => (
-              <RecentChatCard key={chat.id} chat={chat} index={index} />
-            ))}
+            <QuickActionCard
+              title={tier === 'FREE' ? 'View Plans' : 'Manage Plan'}
+              description={
+                tier === 'FREE' ? 'Get more credits and features' : 'Your current subscription'
+              }
+              onClick={() => router.push('/plans')}
+            />
           </div>
-        </motion.div>
-      ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className='flex flex-col items-center justify-center text-center p-4 bg-secondary/50 rounded-lg my-6'>
-            <MessageCircleIcon className='h-16 w-16 text-muted-foreground mb-4' strokeWidth={1.5} />
-            <div className='space-y-2'>
-              <h2 className='text-xl font-semibold'>No Recent Chats</h2>
-              <p className='text-muted-foreground'>Start chatting by entering your first prompt</p>
+        </div>
+      </div>
+
+      {recentChats.length > 0 && (
+        <div className='border-t px-6 py-6'>
+          <div className='max-w-4xl mx-auto'>
+            <h2 className='text-sm font-medium text-muted-foreground mb-3'>Recent</h2>
+            <div className='grid sm:grid-cols-2 gap-2'>
+              {recentChats.slice(0, 4).map((chat) => (
+                <RecentChatItem key={chat.id} chat={chat} />
+              ))}
             </div>
           </div>
-        </motion.div>
+        </div>
       )}
-
-      {/* Features Grid */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5 }}
-        className='grid md:grid-cols-3 gap-6 mb-20'
-      >
-        {FEATURES.map((feature, index) => (
-          <FeatureCard key={index} feature={feature} index={index} />
-        ))}
-      </motion.div>
-    </motion.div>
+    </div>
   );
 }

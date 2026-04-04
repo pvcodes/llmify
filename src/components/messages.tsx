@@ -1,7 +1,6 @@
-'use client';
-
 import equal from 'fast-deep-equal';
-import React, { memo, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import React, { memo, useEffect, useRef, useLayoutEffect } from 'react';
 
 import { useProviderApiKey } from '@/hooks/use-provider-api-key';
 
@@ -23,21 +22,18 @@ interface PureMessagesProps {
   handleRetry: () => void;
   status: 'submitted' | 'streaming' | 'ready' | 'error';
   reload: (chatRequestOptions?: ChatRequestOptions) => Promise<string | null | undefined>;
-  containerRef: React.RefObject<HTMLDivElement | null>;
-  endRef: React.RefObject<HTMLDivElement | null>;
 }
 
-const PureMessages = ({
+function PureMessages({
   messages,
   handleEditMessageSubmit,
   error,
   handleRetry,
   status,
   reload,
-  containerRef,
-  endRef,
-}: PureMessagesProps) => {
+}: PureMessagesProps) {
   const { dataToSendToAI } = useProviderApiKey();
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(
     () => {
@@ -51,38 +47,45 @@ const PureMessages = ({
       };
 
       if (messages.length === 1) fetchInitialResponse();
-    }, // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (el) {
+      el.scrollTop = el.scrollHeight;
+    }
+  }, [messages.length]);
+
   return (
-    <div
-      ref={containerRef}
-      className='relative max-w-4xl h-[calc(100vh-100px)] overflow-auto scrollbar-hide px-2 md:px-4'
-    >
-      {messages.map((message, index) => (
-        <div key={message.id} className='flex flex-col my-2'>
-          {message.role === 'assistant' ? (
-            <Markdown message={message} />
-          ) : (
-            <UserMessage
-              message={message}
-              index={index}
-              handleEditMessageSubmit={handleEditMessageSubmit}
-            />
-          )}
-        </div>
-      ))}
+    <div ref={containerRef} className='flex-1 overflow-y-auto px-4 py-4'>
+      <AnimatePresence>
+        {messages.map((message, index) => (
+          <motion.div
+            key={message.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className='py-2'
+          >
+            {message.role === 'assistant' ? (
+              <Markdown message={message} />
+            ) : (
+              <UserMessage
+                message={message}
+                index={index}
+                handleEditMessageSubmit={handleEditMessageSubmit}
+              />
+            )}
+          </motion.div>
+        ))}
+      </AnimatePresence>
       {status === 'submitted' && <AiResponseLoading />}
       {status === 'error' && <AiResponseError error={error} handleRetry={handleRetry} />}
-      <div ref={endRef} className='shrink-0 min-w-[24px] min-h-36' />
     </div>
   );
-};
+}
 
-export const Messages = memo(PureMessages, (prevProps, nextProps) => {
-  if (prevProps.messages.length !== nextProps.messages.length) return false;
-  if (prevProps.status !== nextProps.status) return false;
-  if (!equal(prevProps.messages, nextProps.messages)) return false;
-  return true;
-});
+export const Messages = memo(PureMessages, equal);

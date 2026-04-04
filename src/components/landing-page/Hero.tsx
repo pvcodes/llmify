@@ -1,76 +1,104 @@
-import { motion } from 'framer-motion';
+'use client';
+
+import { MessageSquare, Cpu, Settings, BarChart3, ArrowRight, Zap } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 
-import { Button } from '../ui/button';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
-import { HeroCards } from './HeroCards';
+const features = [
+  {
+    title: 'Multi-Model Access',
+    description: 'GPT, Claude, DeepSeek, Grok and more — unified interface',
+    icon: Cpu,
+  },
+  {
+    title: 'Smart Conversations',
+    description: 'Context-aware chat with memory and customization',
+    icon: MessageSquare,
+  },
+  {
+    title: 'Fine-Tuned Controls',
+    description: 'Adjust creativity, length, and technical depth',
+    icon: Settings,
+  },
+  {
+    title: 'Usage Analytics',
+    description: 'Track tokens, costs, and model performance',
+    icon: BarChart3,
+  },
+];
 
 export const Hero = () => {
-  // Animation variants
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 },
-  };
-
   return (
-    <motion.section
-      className='container grid lg:grid-cols-2 place-items-center py-20 md:py-32 gap-10'
-      initial='hidden'
-      animate='show'
-      variants={container}
-    >
-      <div className='text-center lg:text-start space-y-6'>
-        <motion.main className='text-5xl md:text-6xl font-bold' variants={item}>
-          <h1 className='inline'>
-            <span className='inline bg-gradient-to-r from-[#F596D3]  to-[#D247BF] text-transparent bg-clip-text'>
-              LLMs
-            </span>{' '}
-            under one
-          </h1>{' '}
-          <h2>
-            <span className='inline bg-gradient-to-r from-[#61DAFB] via-[#1fc0f1] to-[#03a3d7] text-transparent bg-clip-text'>
-              roof
-            </span>{' '}
-            together
-          </h2>
-        </motion.main>
+    <div className='min-h-screen bg-background md:min-w-3xl'>
+      <header className='fixed top-0 left-0 right-0 z-50 flex justify-end p-4 bg-background/80 backdrop-blur-sm'>
+        <ThemeToggle />
+      </header>
 
-        <motion.p
-          className='text-xl text-muted-foreground md:w-10/12 mx-auto lg:mx-0'
-          variants={item}
+      <div className='mx-auto px-2 pt-24 pb-16 md:pt-32 md:pb-24'>
+        <div className='mb-16 animate-fade-up'>
+          <Badge variant='outline' className='mb-6'>
+            <Zap className='w-3 h-3 mr-1.5' />
+            AI Platform
+          </Badge>
+          <h1 className='text-5xl md:text-7xl font-display uppercase tracking-tighter mb-4'>
+            LLMs Under
+            <br />
+            One Roof
+          </h1>
+          <p className='text-xl md:text-2xl text-muted-foreground max-w-lg leading-relaxed'>
+            Access diverse AI models effortlessly. GPT, Claude, DeepSeek — all unified in one
+            powerful interface.
+          </p>
+        </div>
+
+        <div
+          className='flex flex-col sm:flex-row gap-3 mb-16 animate-fade-up'
+          style={{ animationDelay: '0.1s' }}
         >
-          Access diverse LLMs effortlessly with all the tools you need for your project.
-        </motion.p>
-
-        <motion.div className='space-y-4 md:space-y-0 md:space-x-4' variants={item}>
-          <Button className='w-full md:w-1/3' onClick={() => signIn()}>
+          <Button size='lg' onClick={() => signIn()}>
             Get Started
+            <ArrowRight className='w-4 h-4 ml-2' />
           </Button>
-        </motion.div>
+          <Button size='lg' variant='outline' onClick={() => signIn()}>
+            View Demo
+          </Button>
+        </div>
+
+        <nav className='space-y-3'>
+          {features.map((feature, index) => (
+            <div
+              key={feature.title}
+              className='block group animate-fade-up'
+              style={{ animationDelay: `${0.2 + index * 0.1}s` }}
+            >
+              <div className='hover:border-primary/50 hover:bg-secondary/20 transition-all duration-300 cursor-pointer border bg-card'>
+                <div className='flex flex-row items-center gap-4 p-4'>
+                  <div className='w-12 h-12 flex items-center justify-center bg-secondary/50 border border-border group-hover:border-primary/30 group-hover:bg-primary/10 transition-colors'>
+                    <feature.icon className='h-5 w-5 text-foreground group-hover:text-primary transition-colors' />
+                  </div>
+                  <div className='flex-1'>
+                    <h3 className='text-lg font-medium mb-1'>{feature.title}</h3>
+                    <p className='text-sm text-muted-foreground'>{feature.description}</p>
+                  </div>
+                  <ArrowRight className='h-5 w-5 text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-1 transition-all duration-300' />
+                </div>
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        <footer
+          className='mt-16 pt-8 border-t border-border animate-fade-up'
+          style={{ animationDelay: '0.6s' }}
+        >
+          <p className='text-xs text-muted-foreground uppercase tracking-wider'>
+            Built for developers
+          </p>
+        </footer>
       </div>
-
-      {/* Hero cards sections */}
-      <motion.div
-        className='z-10'
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.2, type: 'spring' }}
-      >
-        <HeroCards />
-      </motion.div>
-
-      {/* Shadow effect */}
-      <div className='shadow' />
-    </motion.section>
+    </div>
   );
 };
