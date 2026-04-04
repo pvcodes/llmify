@@ -53,7 +53,7 @@ export default function RootLayout({
       <body className='min-h-screen'>
         <ThemeProvider>
           <TooltipProvider delayDuration={200}>
-            <Provider attribute='class' defaultTheme='dark'>
+            <Provider attribute='class' defaultTheme='light'>
               <Toaster position='top-center' />
               {children}
             </Provider>

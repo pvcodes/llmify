@@ -18,14 +18,14 @@ export default async function Layout({ children }: { children: React.ReactNode }
 
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
-      <div className='flex min-h-screen w-full overflow-hidden'>
-        <AppSidebar />
-        <SidebarInset>
+      <AppSidebar />
+      <SidebarInset>
+        <main className='w-full'>
           <Navbar tier={userBillingDetails?.level} />
           <OnboardingTourWrapper userId={user.id} />
           <div className='flex flex-col flex-1 min-h-0'>{children}</div>
-        </SidebarInset>
-      </div>
+        </main>
+      </SidebarInset>
     </SidebarProvider>
   );
 }
