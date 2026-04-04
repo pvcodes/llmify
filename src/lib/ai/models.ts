@@ -38,7 +38,8 @@ export const allModels: Record<ModelProvider, ModelOption[]> = {
 export const ModelProvidersViaTier: Record<BillingLevel, Record<ModelProvider, ModelOption[]>> = {
   FREE: {
     OpenAI: allModels.OpenAI.filter((m) => ['gpt-4o-mini'].includes(m.value)),
-    Anthropic: allModels.Anthropic.filter((m) => m.value === 'claude-3-5-haiku-latest'),
+    // Anthropic: allModels.Anthropic.filter((m) => m.value === 'claude-3-5-haiku-latest'),
+    Anthropic: [],
     DeepSeek: allModels.DeepSeek.filter((m) => m.value === 'deepseek-chat'),
     xAi: [],
   },

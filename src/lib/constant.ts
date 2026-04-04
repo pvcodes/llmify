@@ -5,8 +5,8 @@ const APP_DESCRIPTION =
 
 const GITHUB_REPO_URL = 'https://github.com/pvcodes/LLMify';
 
-const SUPPORT_EMAIL = 'hi@llmify.xyz';
+const SUPPORT_EMAIL = 'hi@pvocdes.in';
 
-const MAX_FREE_TOKEN = 100000;
+const MAX_FREE_TOKEN = 100000 / 2;
 
 export { APP_NAME, APP_DESCRIPTION, GITHUB_REPO_URL, MAX_FREE_TOKEN, SUPPORT_EMAIL };
