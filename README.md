@@ -1,36 +1,156 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LLMify 🧠
 
-## Getting Started
+> Unified AI chat interface for multiple language models
 
-First, run the development server:
+<div align="center">
+
+[![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org)
+[![Prisma](https://img.shields.io/badge/Prisma-6.5-2D3748)](https://www.prisma.io)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+
+</div>
+
+LLMify is a unified chat interface that lets you interact with multiple AI models (OpenAI, Anthropic, DeepSeek, xAI, and more) through a single, elegant interface. Use your own API keys or the platform's global key.
+
+---
+
+## ✨ Features
+
+- **Multi-Model Support** — Access GPT, Claude, DeepSeek, Grok, Gemini, and more from one place
+- **Local API Key Storage** — Your keys stay encrypted in your browser using Web Crypto API
+- **Smart Conversations** — Context-aware chat with memory and customization
+- **Fine-Tuned Controls** — Adjust creativity, length, and technical depth
+- **Usage Analytics** — Track tokens, costs, and model performance
+- **Real-time Streaming** — Get responses as they're generated
+- **Responsive Design** — Works seamlessly on desktop and mobile
+- **Dark/Light Theme** — System theme detection with manual toggle
+- **Secure & Private** — API keys never leave your device
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 20+
+- pnpm (recommended)
+- PostgreSQL database
+- API keys for your chosen providers
+
+### Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# Clone the repository
+git clone https://github.com/pvcodes/LLMify.git
+cd LLMify
+
+# Install dependencies
+pnpm install
+
+# Set up environment variables
+cp .env.example .env
+
+# Generate Prisma client
+pnpm db:generate
+
+# Push database schema
+npx prisma db push
+
+# Start development server
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/llmify"
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# NextAuth
+NEXTAUTH_SECRET="your-secret-key"
+NEXTAUTH_URL="http://localhost:3000"
 
-## Learn More
+# OAuth (optional)
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠 Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Category       | Technology              |
+| -------------- | ----------------------- |
+| Framework      | Next.js 15 (App Router) |
+| Language       | TypeScript              |
+| Database       | PostgreSQL + Prisma     |
+| Authentication | NextAuth.js             |
+| AI SDK         | Vercel AI SDK           |
+| UI             | Radix UI + Tailwind CSS |
+| State          | Zustand                 |
+| Animations     | Framer Motion           |
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📁 Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+├── actions/           # Server actions
+├── app/              # Next.js app router pages
+├── components/       # React components
+│   ├── ui/           # Base UI components
+│   ├── chat/         # Chat-specific components
+│   ├── landing-page/ # Landing page sections
+│   └── settings/     # Settings pages
+├── hooks/            # Custom React hooks
+├── lib/              # Utilities, configs, AI logic
+└── store/            # Zustand stores
+```
+
+---
+
+## 🔧 Available Scripts
+
+```bash
+pnpm dev          # Start development server
+pnpm build        # Build for production
+pnpm start        # Start production server
+pnpm lint         # Run ESLint with auto-fix
+pnpm db:generate  # Generate Prisma client
+```
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- [Vercel](https://vercel.com) for the amazing AI SDK
+- [Radix UI](https://radix-ui.com) for accessible components
+- All the AI providers making LLMs accessible
+
+---
+
+<div align="center">
+
+Built with 💜 by [pvcodes](https://github.com/pvcodes)
+
+</div>

@@ -80,9 +80,8 @@ export const Features = () => {
       opacity: 1,
       y: 0,
       transition: {
-        type: 'spring',
-        bounce: 0.4,
-        duration: 0.8,
+        duration: 0.6,
+        ease: [0.16, 1, 0.3, 1],
       },
     },
     hover: { y: -5 },
@@ -148,13 +147,19 @@ export const Features = () => {
                   initial={{ scale: 0.9, opacity: 0 }}
                   whileInView={{ scale: 1, opacity: 1 }}
                   viewport={{ once: true }}
-                  transition={{ delay: 0.4, type: 'spring' }}
+                  transition={{
+                    delay: 0.4,
+                    duration: 0.4,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
                 >
                   <Image
                     alt='About feature'
                     src={image}
                     className='w-[200px] lg:w-[300px] mx-auto'
-                    priority
+                    loading='lazy'
+                    width={300}
+                    height={200}
                   />
                 </motion.div>
               </CardFooter>

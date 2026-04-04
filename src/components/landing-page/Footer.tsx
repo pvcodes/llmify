@@ -142,7 +142,7 @@ export const Footer = () => {
 
       <section className='container pb-14 text-center'>
         <h3>
-          &copy; 2024 LLMify by{' '}
+          &copy; 2026 LLMify by{' '}
           <a
             rel='noreferrer noopener'
             target='_blank'

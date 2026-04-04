@@ -119,21 +119,37 @@ export default function ChatInputBox({
           rows={1}
         />
         {status === 'streaming' ? (
-          <Button onClick={stop} type='button' size='icon' className='h-9 w-9'>
-            <Square className='w-4 h-4' />
-          </Button>
+          <motion.button
+            type='button'
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={stop}
+            className='h-9 w-9 flex items-center justify-center rounded-md bg-destructive/10 border border-destructive/30 hover:bg-destructive/20 transition-colors'
+          >
+            <Square className='w-4 h-4 text-destructive' />
+          </motion.button>
         ) : (
           <motion.div
-            animate={input.trim() && status !== 'submitted' ? { scale: [1, 1.02, 1] } : {}}
-            transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+            whileHover={input.trim() ? { scale: 1.05 } : {}}
+            whileTap={input.trim() ? { scale: 0.95 } : {}}
           >
             <Button
               type='submit'
               size='icon'
-              className='h-9 w-9'
+              className={cn(
+                'h-9 w-9 transition-all',
+                input.trim()
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'bg-muted text-muted-foreground cursor-not-allowed'
+              )}
               disabled={!input.trim() || status === 'submitted'}
             >
-              <SendHorizontal className='w-4 h-4' />
+              <motion.span
+                animate={input.trim() && status !== 'submitted' ? { x: [0, 2, 0] } : {}}
+                transition={{ duration: 0.6, repeat: 0, ease: 'easeOut' }}
+              >
+                <SendHorizontal className='w-4 h-4' />
+              </motion.span>
             </Button>
           </motion.div>
         )}

@@ -1,5 +1,6 @@
 'use client';
 
+import { motion, AnimatePresence } from 'framer-motion';
 import { Check, PenLine, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -19,6 +20,12 @@ interface ChatNameEditableProps {
   chat: Chat;
   className?: string;
 }
+
+const editVariants = {
+  hidden: { opacity: 0, height: 0, scale: 0.95 },
+  visible: { opacity: 1, height: 'auto', scale: 1 },
+  exit: { opacity: 0, height: 0, scale: 0.95 },
+};
 
 export default function ChatNameEditable({ chat, className }: ChatNameEditableProps) {
   const [name, setName] = useState(chat.name ?? chat.id);
@@ -57,7 +64,10 @@ export default function ChatNameEditable({ chat, className }: ChatNameEditablePr
 
     try {
       setIsLoading(true);
-      const response = await updateChatName({ chatId: chat.id, name: trimmedName });
+      const response = await updateChatName({
+        chatId: chat.id,
+        name: trimmedName,
+      });
 
       if (!response.success) {
         throw new Error(response.error || 'Failed to update chat name');
@@ -102,65 +112,88 @@ export default function ChatNameEditable({ chat, className }: ChatNameEditablePr
       )}
       onClick={(e) => e.stopPropagation()}
     >
-      {isEditing ? (
-        <div className='flex items-center gap-2 w-full'>
-          <Input
-            ref={inputRef}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={handleKeyDown}
-            disabled={isLoading}
-            className='h-6 text-sm'
-            maxLength={50}
-            aria-label='Edit chat name'
-          />
-          <Button
-            variant='ghost'
-            size='icon'
-            className='h-6 w-6 shrink-0'
-            onClick={handleSave}
-            disabled={isLoading}
-            aria-label='Save'
-            type='button'
+      <AnimatePresence mode='wait'>
+        {isEditing ? (
+          <motion.div
+            key='edit-mode'
+            initial='hidden'
+            animate='visible'
+            exit='exit'
+            variants={editVariants}
+            transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+            className='flex items-center gap-2 w-full'
           >
-            <Check className='h-3 w-3 text-green-600' />
-          </Button>
-          <Button
-            variant='ghost'
-            size='icon'
-            className='h-6 w-6 shrink-0'
-            onClick={handleCancel}
-            disabled={isLoading}
-            aria-label='Cancel'
-            type='button'
+            <Input
+              ref={inputRef}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={isLoading}
+              className='h-6 text-sm'
+              maxLength={50}
+              aria-label='Edit chat name'
+            />
+            <motion.div whileHover='hover' whileTap='tap'>
+              <Button
+                variant='ghost'
+                size='icon'
+                className='h-6 w-6 shrink-0'
+                onClick={handleSave}
+                disabled={isLoading}
+                aria-label='Save'
+                type='button'
+              >
+                <Check className='h-3 w-3 text-green-600' />
+              </Button>
+            </motion.div>
+            <motion.div whileHover='hover' whileTap='tap'>
+              <Button
+                variant='ghost'
+                size='icon'
+                className='h-6 w-6 shrink-0'
+                onClick={handleCancel}
+                disabled={isLoading}
+                aria-label='Cancel'
+                type='button'
+              >
+                <X className='h-3 w-3 text-red-600' />
+              </Button>
+            </motion.div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key='view-mode'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.1 }}
+            className='flex items-center w-full justify-between'
           >
-            <X className='h-3 w-3 text-red-600' />
-          </Button>
-        </div>
-      ) : (
-        <div className='flex items-center w-full justify-between'>
-          <Link
-            href={`/chat/${chat.id}`}
-            className='flex-1 truncate'
-            title={name}
-            onClick={() => setOpenMobile(false)}
-          >
-            <span className='whitespace-nowrap overflow-hidden text-ellipsis block w-[250px] md:w-full'>
-              {name}
-            </span>
-          </Link>
-          <Button
-            variant='ghost'
-            size='icon'
-            className='h-5 w-5 opacity-100 lg:opacity-0 lg:group-hover/chat:opacity-100 ransition-opacity ml-1 shrink-0'
-            onClick={handleEditClick}
-            aria-label='Edit chat name'
-            type='button'
-          >
-            <PenLine className='h-3 w-3 text-muted-foreground' />
-          </Button>
-        </div>
-      )}
+            <Link
+              href={`/chat/${chat.id}`}
+              className='flex-1 truncate'
+              title={name}
+              onClick={() => setOpenMobile(false)}
+            >
+              <span className='whitespace-nowrap overflow-hidden text-ellipsis block w-[250px] md:w-full'>
+                {name}
+              </span>
+            </Link>
+            <motion.div whileHover='hover' whileTap='tap'>
+              <Button
+                variant='ghost'
+                size='icon'
+                className='h-5 w-5 opacity-100 lg:opacity-0 lg:group-hover/chat:opacity-100 ransition-opacity ml-1 shrink-0'
+                onClick={handleEditClick}
+                aria-label='Edit chat name'
+                type='button'
+              >
+                <PenLine className='h-3 w-3 text-muted-foreground' />
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

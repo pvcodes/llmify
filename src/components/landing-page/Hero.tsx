@@ -3,7 +3,6 @@
 import { MessageSquare, Cpu, Settings, BarChart3, ArrowRight, Zap } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 
-import { ThemeToggle } from '@/components/theme-toggle';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
@@ -33,10 +32,6 @@ const features = [
 export const Hero = () => {
   return (
     <div className='min-h-screen bg-background md:min-w-3xl'>
-      <header className='fixed top-0 left-0 right-0 z-50 flex justify-end p-4 bg-background/80 backdrop-blur-sm'>
-        <ThemeToggle />
-      </header>
-
       <div className='mx-auto px-2 pt-24 pb-16 md:pt-32 md:pb-24'>
         <div className='mb-16 animate-fade-up'>
           <Badge variant='outline' className='mb-6'>
