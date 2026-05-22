@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { BotIcon, RefreshCcw } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -7,36 +8,54 @@ import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { Button } from './ui/button';
 import { Skeleton } from './ui/skeleton';
 
+const LOADING_MESSAGES = [
+  'Processing your request...',
+  'Analyzing context...',
+  'Generating response...',
+  'Finalizing output...',
+];
+
 export function AiResponseLoading() {
+  const [messageIndex, setMessageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMessageIndex((prev) => (prev + 1) % LOADING_MESSAGES.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className='relative'>
       <div
         className={cn(
-          'text-sm relative w-full max-w-2xl mb-2 bg-gray-100 dark:bg-gray-800 p-2 rounded-lg'
+          'text-sm relative w-full max-w-2xl mb-2 bg-secondary p-3 border border-transparent'
         )}
       >
         <div className='flex items-center mb-3'>
-          {/* <Skeleton className="w-6 h-6 rounded bg-gray-300 dark:bg-gray-600" /> */}
-          <BotIcon className='w-6 h-6 p-1 bg-gray-200 dark:bg-gray-700 rounded text-gray-800 dark:text-gray-200 shadow-sm' />
+          <div className='w-8 h-8 flex items-center justify-center bg-primary/10 border border-border'>
+            <BotIcon className='w-5 h-5' />
+          </div>
         </div>
 
         <div className='space-y-2'>
           <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
+            key={messageIndex}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
             className='text-sm font-medium text-muted-foreground mb-1.5'
           >
-            Thinking...
+            {LOADING_MESSAGES[messageIndex]}
           </motion.p>
-          <Skeleton className='h-4 w-full bg-gray-300 dark:bg-gray-600' />
-          <Skeleton className='h-4 w-3/4 bg-gray-300 dark:bg-gray-600' />
-          <Skeleton className='h-4 w-1/2 bg-gray-300 dark:bg-gray-600' />
+          <Skeleton className='h-4 w-full' />
+          <Skeleton className='h-4 w-3/4' />
+          <Skeleton className='h-4 w-1/2' />
         </div>
 
         <div className='absolute -bottom-5 right-2 flex space-x-2'>
-          <Skeleton className='h-8 w-24 bg-gray-300 dark:bg-gray-600 rounded-md' />
-          <Skeleton className='h-8 w-20 bg-gray-300 dark:bg-gray-600 rounded-md' />
+          <Skeleton className='h-8 w-24' />
+          <Skeleton className='h-8 w-20' />
         </div>
       </div>
     </div>
@@ -49,28 +68,38 @@ interface AiResponseErrorProps {
 }
 
 export function AiResponseError({ error, handleRetry }: AiResponseErrorProps) {
+  const getErrorMessage = (msg: string) => {
+    if (msg.includes('Failed to fetch')) {
+      return 'Connection issue. Please check your network.';
+    }
+    if (msg.includes('rate limit')) {
+      return 'Rate limit reached. Please wait a moment.';
+    }
+    if (msg.includes('authentication') || msg.includes('api key')) {
+      return 'API key issue. Check your settings.';
+    }
+    if (msg.includes('insufficient')) {
+      return 'Credits exhausted. Upgrade for more.';
+    }
+    return msg.startsWith('"') && msg.endsWith('"') ? msg.slice(1, -1) : msg;
+  };
+
   return (
-    <Alert
-      variant='destructive'
-      className='mt-3 sm:mt-4 rounded-lg text-gray-900 dark:text-gray-50'
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
     >
-      <AlertTitle>Failed</AlertTitle>
-      <AlertDescription className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-gray-900 dark:text-gray-50'>
-        <span className='text-gray-900 dark:text-gray-50'>
-          {error?.message.startsWith('"') && error.message.endsWith('"')
-            ? error.message.slice(1, -1)
-            : error?.message}
-        </span>
-        <Button
-          variant='outline'
-          onClick={handleRetry}
-          size='sm'
-          className='rounded-full text-gray-900 dark:text-gray-50'
-        >
-          <RefreshCcw className='w-4 h-4 mr-1' />
-          Retry
-        </Button>
-      </AlertDescription>
-    </Alert>
+      <Alert variant='destructive' className='mt-3 sm:mt-4'>
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2'>
+          <span>{getErrorMessage(error?.message || 'Something went wrong')}</span>
+          <Button variant='outline' onClick={handleRetry} size='sm'>
+            <RefreshCcw className='w-4 h-4 mr-1' />
+            Retry
+          </Button>
+        </AlertDescription>
+      </Alert>
+    </motion.div>
   );
 }

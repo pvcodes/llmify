@@ -20,30 +20,26 @@ export default function Settings() {
   }, []);
 
   return (
-    <div className='flex flex-col h-full w-full max-w-4xl mx-auto mt-1 lg:mt-10'>
-      <Tabs value={activeTab} onValueChange={setActiveTab} className='w-full'>
-        <TabsList className='grid grid-cols-3 gap-2 w-full max-w-md mx-auto mb-6'>
-          <TabsTrigger value='api-keys' className='rounded-lg'>
-            API Keys
-          </TabsTrigger>
-          <TabsTrigger value='preferences' className='rounded-lg'>
-            Preferences
-          </TabsTrigger>
-          <TabsTrigger value='notifications' className='rounded-lg'>
-            Notifications
-          </TabsTrigger>
-        </TabsList>
+    <div className='flex flex-col flex-1 min-w-0 overflow-hidden py-4 sm:py-6 px-2 sm:px-4'>
+      <div className='w-full max-w-xl mx-auto overflow-x-hidden min-w-0'>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className='grid grid-cols-3 w-full mb-6 min-w-0'>
+            <TabsTrigger value='api-keys'>API Keys</TabsTrigger>
+            <TabsTrigger value='preferences'>Preferences</TabsTrigger>
+            <TabsTrigger value='notifications'>Notifications</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value='api-keys' className='mt-0'>
-          <APIKeysTab />
-        </TabsContent>
-        <TabsContent value='preferences' className='mt-0' id='preferences'>
-          <PreferencesTab />
-        </TabsContent>
-        <TabsContent value='notifications' className='mt-0'>
-          <NotificationsTab />
-        </TabsContent>
-      </Tabs>
+          <TabsContent value='api-keys'>
+            <APIKeysTab />
+          </TabsContent>
+          <TabsContent value='preferences'>
+            <PreferencesTab />
+          </TabsContent>
+          <TabsContent value='notifications'>
+            <NotificationsTab />
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }

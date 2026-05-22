@@ -17,7 +17,6 @@ import styles from './markdown.module.css';
 
 import type { UIMessage } from 'ai';
 
-// Configure Marked with Highlight.js
 marked.use(
   markedHighlight({
     langPrefix: 'hljs language-',
@@ -26,7 +25,6 @@ marked.use(
   })
 );
 
-// Sanitization Config
 const SANITIZE_CONFIG = {
   allowedTags: [
     'h1',
@@ -60,7 +58,6 @@ interface MarkdownProps {
   className?: string;
 }
 
-// Enhance Code Blocks
 const enhanceCodeBlocks = (container: HTMLDivElement) => {
   return Array.from(container.querySelectorAll('pre code')).map((block) => {
     const pre = block.parentElement;
@@ -70,11 +67,12 @@ const enhanceCodeBlocks = (container: HTMLDivElement) => {
     const lang = block.className.match(/language-(\w+)/)?.[1] || 'text';
 
     const wrapper = document.createElement('div');
-    wrapper.className = 'relative mb-4 border rounded-md bg-gray-900 text-sm shadow-sm';
+    wrapper.className = 'relative mb-4 border bg-card';
 
     const header = document.createElement('div');
-    header.className = 'flex justify-between items-center bg-gray-800 p-1 text-xs text-gray-300';
-    header.innerHTML = `<span class="pl-2">${lang.toUpperCase()}</span>`;
+    header.className =
+      'flex justify-between items-center bg-muted px-3 py-1.5 text-xs text-muted-foreground border-b';
+    header.innerHTML = `<span>${lang.toUpperCase()}</span>`;
 
     wrapper.append(header, pre.cloneNode(true));
     pre.replaceWith(wrapper);
@@ -90,7 +88,6 @@ const Markdown = React.memo(({ message, className }: MarkdownProps) => {
   const [isHovering, setIsHovering] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Process and sanitize markdown content
   const processMessage = useCallback(async () => {
     if (!message?.parts?.length) return setHtml('');
 
@@ -113,7 +110,6 @@ const Markdown = React.memo(({ message, className }: MarkdownProps) => {
     processMessage();
   }, [processMessage]);
 
-  // Copy Handlers
   const handleCopy = useCallback(
     (type: 'full' | 'code') => {
       if (type === 'full') {
@@ -131,7 +127,7 @@ const Markdown = React.memo(({ message, className }: MarkdownProps) => {
     <div className='relative'>
       <motion.div
         className={cn(
-          'text-sm relative w-full max-w-2xl mb-2 bg-gray-100 dark:bg-gray-800 p-2 rounded-lg',
+          'text-sm relative w-full max-w-2xl mb-2 bg-secondary p-3 border border-transparent',
           className
         )}
         initial={{ opacity: 0, y: 10 }}
@@ -141,15 +137,14 @@ const Markdown = React.memo(({ message, className }: MarkdownProps) => {
         onMouseLeave={() => setIsHovering(false)}
       >
         <div className='flex items-center mb-3'>
-          <BotIcon className='w-6 h-6 p-1 bg-gray-200 dark:bg-gray-700 rounded text-gray-800 dark:text-gray-200 shadow-sm' />
+          <div className='w-8 h-8 flex items-center justify-center bg-primary/10 border border-border'>
+            <BotIcon className='w-5 h-5' />
+          </div>
         </div>
 
         <div
           ref={containerRef}
-          className={cn(
-            styles.markdown,
-            'prose dark:prose-invert max-w-none text-gray-800 dark:text-gray-200 m-0'
-          )}
+          className={cn(styles.markdown, 'prose dark:prose-invert max-w-none text-foreground m-0')}
           dangerouslySetInnerHTML={{ __html: html }}
         />
 

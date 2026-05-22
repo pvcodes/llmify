@@ -1,23 +1,2 @@
-#!/bin/bash
-
-# Pre-commit hook script (save as .husky/pre-commit)
-
-# Run linter before allowing git add
-run_linter() {
-    echo "🔍 Running linter before commit..."
-    pnpm lint 
-    pnpm build
-    
-    # Capture the lint exit status
-    LINT_EXIT_CODE=$?
-    
-    # If linter fails, prevent commit
-    if [ $LINT_EXIT_CODE -ne 0 ]; then
-        echo "❌ Linting failed. Please fix the issues before committing."
-        exit 1
-    fi
-}
-
-run_linter
-
-echo "✅ Linting passed. Proceeding with git add..."
+#!/usr/bin/env sh
+. "$(dirname "$0")/h"

@@ -9,7 +9,7 @@ export async function AppSidebar() {
   const user = await getAuthenticatedUser();
 
   return (
-    <Sidebar className='border-r'>
+    <Sidebar>
       <Suspense fallback={<div className='p-4 text-muted'>Loading chats...</div>}>
         <SidebarClient userEmail={user.email} />
       </Suspense>

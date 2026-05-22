@@ -1,5 +1,5 @@
 'use client';
-import { Menu } from 'lucide-react';
+import { Menu, Plus } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -8,7 +8,6 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import ModeToggle from './mode-toggle';
 import SelectAiModel from './select-ai-model';
 import { Button } from './ui/button';
-import { Separator } from './ui/separator';
 import { SidebarTrigger } from './ui/sidebar';
 import User from './user-menu';
 
@@ -26,41 +25,33 @@ export default function Navbar({ tier }: { tier: BillingLevel }) {
   };
 
   return (
-    <nav className='block sticky top-0 border-b bg-background'>
-      <div className='flex items-center gap-2 justify-between px-4 py-2'>
+    <nav className='sticky top-0 z-40 border-b bg-background'>
+      <div className='flex items-center justify-between h-12 px-3'>
         <div className='flex items-center gap-2'>
           <SidebarTrigger />
-          <div className='hidden md:block'>
-            <ModeToggle />
-          </div>
+          <ModeToggle />
         </div>
 
         <div className='hidden md:flex items-center gap-2'>
-          <Button onClick={handleNewChat} variant='secondary' disabled={isNewChatRoute}>
-            New Chat
+          <Button id='new-chat-btn' onClick={handleNewChat} size='sm' disabled={isNewChatRoute}>
+            <Plus className='w-4 h-4 mr-1.5' />
+            New
           </Button>
-          <SelectAiModel setSheetOpen={setSheetOpen} tier={tier} />
+          <SelectAiModel id='model-selector' setSheetOpen={setSheetOpen} tier={tier} />
           <User />
         </div>
 
-        {/* Mobile menu */}
         <div className='md:hidden'>
           <Sheet onOpenChange={setSheetOpen} open={sheetOpen}>
             <SheetTrigger asChild>
               <Button variant='ghost' size='icon'>
-                <Menu size={20} />
+                <Menu className='w-5 h-5' />
               </Button>
             </SheetTrigger>
-            <SheetContent side='top' className='p-4'>
-              <div className='flex justify-between'>
-                <button onClick={() => setSheetOpen(false)}>
-                  {' '}
-                  <ModeToggle />{' '}
-                </button>
-                <User />
-              </div>
-              <div className='flex flex-col gap-2'>
-                <Button onClick={handleNewChat} variant='secondary' disabled={isNewChatRoute}>
+            <SheetContent side='top' className='p-4 pt-12'>
+              <div className='flex flex-col gap-3'>
+                <Button onClick={handleNewChat} size='sm' disabled={isNewChatRoute}>
+                  <Plus className='w-4 h-4 mr-2' />
                   New Chat
                 </Button>
                 <SelectAiModel setSheetOpen={setSheetOpen} tier={tier} />
@@ -69,7 +60,6 @@ export default function Navbar({ tier }: { tier: BillingLevel }) {
           </Sheet>
         </div>
       </div>
-      <Separator />
     </nav>
   );
 }

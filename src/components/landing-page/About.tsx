@@ -30,9 +30,8 @@ export const About = () => {
       opacity: 1,
       x: 0,
       transition: {
-        type: 'spring',
-        stiffness: 100,
-        damping: 10,
+        duration: 0.6,
+        ease: [0.16, 1, 0.3, 1],
       },
     },
   };
@@ -56,7 +55,7 @@ export const About = () => {
             />
           </motion.div>
 
-          <motion.div className='bg-green-0 flex flex-col justify-between' variants={container}>
+          <motion.div className='bg-background flex flex-col justify-between' variants={container}>
             <motion.div className='pb-6' variants={item}>
               <h2 className='text-3xl md:text-4xl font-bold'>
                 <span className='bg-gradient-to-b from-primary/60 to-primary text-transparent bg-clip-text'>

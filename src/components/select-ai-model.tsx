@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { Check, ChevronsUpDown, KeyRound, Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback, memo } from 'react';
@@ -23,11 +24,17 @@ import useChatStore from '@/store/useChatStore';
 import type { BillingLevel } from '@prisma/client';
 
 interface SelectAiModelProps {
+  id?: string;
   setSheetOpen: (open: boolean) => void;
   tier: BillingLevel;
 }
 
-const ModelSelector = ({ setSheetOpen, tier }: SelectAiModelProps) => {
+const popoverVariants = {
+  hidden: { opacity: 0, scale: 0.95, y: -4 },
+  visible: { opacity: 1, scale: 1, y: 0 },
+};
+
+const ModelSelector = ({ id, setSheetOpen, tier }: SelectAiModelProps) => {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [availableProviders, setAvailableProviders] = useState(ModelProvidersViaTier[tier]);
@@ -72,95 +79,115 @@ const ModelSelector = ({ setSheetOpen, tier }: SelectAiModelProps) => {
     <div className='w-full max-w-md'>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant='outline'
-            role='combobox'
-            aria-expanded={open}
-            className={cn('w-full justify-between', hasNoApiKeys && 'border-warning')}
+          <motion.button
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            className='relative'
           >
-            {hasNoApiKeys ? (
-              <span className='flex items-center gap-2'>
-                <Lock className='h-4 w-4' />
-                Set up API key
-              </span>
-            ) : (
-              <span className='truncate'>{config?.model?.label || 'Select Model'}</span>
-            )}
-            <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
-          </Button>
+            <Button
+              id={id}
+              variant='outline'
+              role='combobox'
+              aria-expanded={open}
+              className={cn('w-full justify-between', hasNoApiKeys && 'border-warning')}
+            >
+              {hasNoApiKeys ? (
+                <span className='flex items-center gap-2'>
+                  <Lock className='h-4 w-4' />
+                  Set up API key
+                </span>
+              ) : (
+                <span className='truncate'>{config?.model?.label || 'Select Model'}</span>
+              )}
+              <motion.span
+                animate={{ rotate: open ? 180 : 0 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className='ml-2 h-4 w-4 shrink-0 opacity-50 flex items-center'
+              >
+                <ChevronsUpDown className='h-4 w-4' />
+              </motion.span>
+            </Button>
+          </motion.button>
         </PopoverTrigger>
 
-        <PopoverContent
-          className='w-[var(--radix-popover-trigger-width)] lg:w-[300px] p-0'
-          align='start'
+        <motion.div
+          initial='hidden'
+          animate={open ? 'visible' : 'hidden'}
+          variants={popoverVariants}
+          transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
         >
-          <Command className='min-w-fit'>
-            <CommandInput placeholder='Search model...' />
-            <CommandList className='max-h-[300px]'>
-              <CommandEmpty>No models found</CommandEmpty>
+          <PopoverContent
+            className='w-[var(--radix-popover-trigger-width)] lg:w-[300px] p-0'
+            align='start'
+          >
+            <Command className='min-w-fit'>
+              <CommandInput placeholder='Search model...' />
+              <CommandList className='max-h-[300px]'>
+                <CommandEmpty>No models found</CommandEmpty>
 
-              {hasNoApiKeys ? (
-                <div className='grid place-items-center p-6 gap-3 text-center'>
-                  <KeyRound className='h-12 w-12 opacity-40' />
-                  <div>
-                    <p className='font-medium'>API key required</p>
-                    <p className='text-sm opacity-70 mt-1'>
-                      Set up at least one API key to use models
-                    </p>
+                {hasNoApiKeys ? (
+                  <div className='grid place-items-center p-6 gap-3 text-center'>
+                    <KeyRound className='h-12 w-12 opacity-40' />
+                    <div>
+                      <p className='font-medium'>API key required</p>
+                      <p className='text-sm opacity-70 mt-1'>
+                        Set up at least one API key to use models
+                      </p>
+                    </div>
+                    <Button onClick={handleSetupApiKeys} size='sm' variant='secondary'>
+                      Set up API Keys
+                    </Button>
                   </div>
-                  <Button onClick={handleSetupApiKeys} size='sm' variant='secondary'>
-                    Set up API Keys
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  {Object.entries(availableProviders)
-                    .filter(([, models]) => models.length > 0)
-                    .map(([provider, models]) => (
-                      <CommandGroup key={provider}>
-                        <p className='text-xs font-medium opacity-70 px-2 py-1.5'>{provider}</p>
-                        {models.map((model) => (
-                          <CommandItem
-                            key={model.value}
-                            value={model.value}
-                            onSelect={() => handleModelSelect(provider as ModelProvider, model)}
-                            className='gap-2'
-                          >
-                            <Check
-                              className={cn(
-                                'h-4 w-4 shrink-0',
-                                config?.model?.value === model.value ? 'opacity-100' : 'opacity-0'
-                              )}
-                            />
-                            <span className='truncate'>{model.label}</span>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    ))}
+                ) : (
+                  <>
+                    {Object.entries(availableProviders)
+                      .filter(([, models]) => models.length > 0)
+                      .map(([provider, models]) => (
+                        <CommandGroup key={provider}>
+                          <p className='text-xs font-medium opacity-70 px-2 py-1.5'>{provider}</p>
+                          {models.map((model) => (
+                            <CommandItem
+                              key={model.value}
+                              value={model.value}
+                              onSelect={() => handleModelSelect(provider as ModelProvider, model)}
+                              className='gap-2'
+                            >
+                              <Check
+                                className={cn(
+                                  'h-4 w-4 shrink-0',
+                                  config?.model?.value === model.value ? 'opacity-100' : 'opacity-0'
+                                )}
+                              />
+                              <span className='truncate'>{model.label}</span>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      ))}
 
-                  <div className='border-t p-2'>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant='ghost'
-                            size='sm'
-                            className='w-full text-sm opacity-70'
-                            onClick={handleSetupApiKeys}
-                          >
-                            <KeyRound className='h-3 w-3 mr-2' />
-                            Manage API Keys
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Configure additional models</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                </>
-              )}
-            </CommandList>
-          </Command>
-        </PopoverContent>
+                    <div className='border-t p-2'>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant='ghost'
+                              size='sm'
+                              className='w-full text-sm opacity-70'
+                              onClick={handleSetupApiKeys}
+                            >
+                              <KeyRound className='h-3 w-3 mr-2' />
+                              Manage API Keys
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Configure additional models</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  </>
+                )}
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </motion.div>
       </Popover>
     </div>
   );

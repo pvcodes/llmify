@@ -1,52 +1,33 @@
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 export function useScrollToBottom<T extends HTMLElement>(): [
-  RefObject<T | null>,
-  RefObject<T | null>,
+  React.RefObject<T | null>,
+  React.RefObject<HTMLDivElement | null>,
   () => void,
 ] {
   const containerRef = useRef<T | null>(null);
-  const endRef = useRef<T | null>(null);
-  const [isAutoScrolling, setIsAutoScrolling] = useState(true);
+  const endRef = useRef<HTMLDivElement | null>(null);
+  const isAtBottom = useRef(true);
+
+  const scrollToBottom = useCallback(() => {
+    isAtBottom.current = true;
+    endRef.current?.scrollIntoView({ block: 'end' });
+  }, []);
 
   useEffect(() => {
     const container = containerRef.current;
-    const end = endRef.current;
+    if (!container) return;
 
-    if (container && end) {
-      const handleScroll = () => {
-        // Check if user has scrolled up manually
-        const { scrollTop, scrollHeight, clientHeight } = container;
-        const isNearBottom = scrollHeight - (scrollTop + clientHeight) < 100;
-        setIsAutoScrolling(isNearBottom);
-      };
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const threshold = 50;
+      isAtBottom.current = scrollHeight - scrollTop - clientHeight <= threshold;
+    };
 
-      container.addEventListener('scroll', handleScroll);
-
-      const observer = new MutationObserver(() => {
-        if (isAutoScrolling && end) {
-          end.scrollIntoView({ behavior: 'smooth', block: 'end' });
-        }
-      });
-
-      observer.observe(container, {
-        childList: true,
-        subtree: true,
-      });
-
-      return () => {
-        observer.disconnect();
-        container.removeEventListener('scroll', handleScroll);
-      };
-    }
-  }, [isAutoScrolling]);
-
-  const scrollToBottom = () => {
-    if (endRef.current) {
-      setIsAutoScrolling(true);
-      endRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return [containerRef, endRef, scrollToBottom];
 }

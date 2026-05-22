@@ -6,7 +6,7 @@ import { useTheme } from '@/components/theme-provider';
 
 import { Button } from './ui/button';
 
-export default function ModeToggle({ className }: { className?: string }) {
+export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
   const cycleTheme = () => {
@@ -22,13 +22,7 @@ export default function ModeToggle({ className }: { className?: string }) {
   const Icon = theme === 'light' ? Sun : theme === 'dark' ? Moon : Monitor;
 
   return (
-    <Button
-      variant='ghost'
-      size='icon'
-      onClick={cycleTheme}
-      className={className}
-      aria-label={`Theme: ${theme}`}
-    >
+    <Button variant='ghost' size='icon' onClick={cycleTheme} aria-label={`Theme: ${theme}`}>
       <Icon className='w-4 h-4' />
     </Button>
   );

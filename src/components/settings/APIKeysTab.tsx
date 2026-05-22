@@ -143,7 +143,7 @@ export function APIKeysTab() {
         <p className='text-sm text-muted-foreground'>Manage your API keys for AI providers</p>
       </CardHeader>
       <CardContent className='p-0'>
-        <div className='px-6 py-4'>
+        <div className='px-3 sm:px-6 py-4'>
           <Alert variant='default' className='mb-6 rounded-md bg-muted'>
             <Lock className='h-4 w-4 text-muted-foreground' />
             <AlertDescription className='text-sm'>
@@ -156,7 +156,7 @@ export function APIKeysTab() {
             Initializing secure key storage...
           </div>
         ) : cryptoKey ? (
-          <Accordion type='single' collapsible className='w-full'>
+          <Accordion type='single' collapsible className='w-full min-w-0'>
             {llmProviders.map((provider) => (
               <APIKeyAccordion
                 key={provider}
