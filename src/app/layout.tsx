@@ -1,3 +1,4 @@
+import { Analytics } from '@vercel/analytics/next';
 import { DM_Sans, Oswald, JetBrains_Mono } from 'next/font/google';
 
 import { Provider } from '@/components/Provider';
@@ -59,6 +60,7 @@ export default function RootLayout({
             </Provider>
           </TooltipProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
